@@ -77,23 +77,24 @@ while run:
                          (scale_factor * ((object_3_pos[0] + camera_x_distance) - (object_3_size/2)) + size[0] / 2,
                                scale_factor * ((object_3_pos[1] + camera_y_distance) - (object_size/2)) + size[1] / 2,
                                scale_factor * object_3_size, scale_factor * object_3_size))
+    
+  collision_top = False
+    collision_bottom = False
+    collision_left = False
+    collision_right = False
 
-    collision_bottom = (pygame.Rect.colliderect(object, (object_2[0], object_2[1] + scale_factor * collision_allowance * movement_speed, object_2[2], object_2[3]))
-                        or
-                        pygame.Rect.colliderect(object, (object_3[0], object_3[1] + scale_factor * collision_allowance * movement_speed, object_3[2], object_3[3])))
+    for i in range(len(object_list)):
+        if collision_bottom == False:
+            collision_bottom = (pygame.Rect.colliderect(object, (object_list[i][0], object_list[i][1] + scale_factor * collision_allowance * movement_speed, object_list[i][2], object_list[i][3])))
 
-    collision_top = (pygame.Rect.colliderect(object, (object_2[0], object_2[1] - scale_factor * collision_allowance * movement_speed, object_2[2], object_2[3]))
-                     or
-                     pygame.Rect.colliderect(object, (object_3[0], object_3[1] - scale_factor * collision_allowance * movement_speed, object_3[2], object_3[3])))
+        if collision_top == False:
+            collision_top = (pygame.Rect.colliderect(object, (object_list[i][0], object_list[i][1] - scale_factor * collision_allowance * movement_speed, object_list[i][2], object_list[i][3])))
 
-    collision_left = (pygame.Rect.colliderect(object, (object_2[0] + scale_factor * collision_allowance * movement_speed, object_2[1], object_2[2], object_2[3]))
-                      or
-                      pygame.Rect.colliderect(object, (object_3[0] + scale_factor * collision_allowance * movement_speed, object_3[1], object_3[2], object_3[3])))
+        if collision_left == False:
+            collision_left = (pygame.Rect.colliderect(object, (object_list[i][0] + scale_factor * collision_allowance * movement_speed, object_list[i][1], object_list[i][2], object_list[i][3])))
 
-    collision_right = (pygame.Rect.colliderect(object, (object_2[0] - scale_factor * collision_allowance * movement_speed, object_2[1], object_2[2], object_2[3]))
-                       or
-                       pygame.Rect.colliderect(object, (object_3[0] - scale_factor * collision_allowance * movement_speed, object_3[1], object_3[2], object_3[3])))
-
+        if collision_right == False:
+            collision_right = (pygame.Rect.colliderect(object, (object_list[i][0] - scale_factor * collision_allowance * movement_speed, object_list[i][1], object_list[i][2], object_list[i][3])))
 
     if keys[pygame.K_w] and collision_bottom == False:
         camera_pos[1] += -movement_speed
