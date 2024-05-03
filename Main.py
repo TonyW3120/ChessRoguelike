@@ -66,7 +66,7 @@ while run:
     object = pygame.draw.rect(screen, (100, 100, 255),
                         (scale_factor * (object_pos[0] - (object_size/2)) + size[0] / 2,
                                scale_factor * (object_pos[1] - (object_size/2)) + size[1] / 2, scale_factor * object_size, scale_factor * object_size),
-                               max(int(10*scale_factor), min_border_thickness))
+                               max(int(10 * scale_factor), min_border_thickness))
 
     object_2 = pygame.draw.rect(screen, (255, 100, 100),
                          (scale_factor * ((object_2_pos[0] + camera_x_distance) - (object_2_size/2)) + size[0] / 2,
