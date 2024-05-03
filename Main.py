@@ -18,12 +18,11 @@ object_3_pos = [200, 200]
 home_point = (0, 0)
 camera_pos = [300, 300]
 movement_speed = 1
-object_size = 50
-object_2_size = 10
-object_3_size = 100
+user_size = 50
+object_1_size = 10
+object_2_size = 100
 collision_allowance = 3
 collision = False
-collision_bottom = False
 min_border_thickness = 1
 
 while run:
@@ -63,38 +62,41 @@ while run:
 
     keys = pygame.key.get_pressed()
 
-    object = pygame.draw.rect(screen, (100, 100, 255),
-                        (scale_factor * (object_pos[0] - (object_size/2)) + size[0] / 2,
-                               scale_factor * (object_pos[1] - (object_size/2)) + size[1] / 2, scale_factor * object_size, scale_factor * object_size),
-                               max(int(10 * scale_factor), min_border_thickness))
+    user = pygame.draw.rect(screen, (100, 100, 255),
+                        (scale_factor * (object_pos[0] - (user_size/2)) + size[0] / 2,
+                         scale_factor * (object_pos[1] - (user_size/2)) + size[1] / 2,
+                         scale_factor * user_size, scale_factor * user_size),
+                         max(int(10 * scale_factor), min_border_thickness))
 
-    object_2 = pygame.draw.rect(screen, (255, 100, 100),
-                         (scale_factor * ((object_2_pos[0] + camera_x_distance) - (object_2_size/2)) + size[0] / 2,
-                               scale_factor * ((object_2_pos[1] + camera_y_distance) - (object_size/2)) + size[1] / 2,
-                               scale_factor * object_2_size, scale_factor * object_2_size))
+    object_1 = pygame.draw.rect(screen, (255, 100, 100),
+                         (scale_factor * ((object_2_pos[0] + camera_x_distance) - (object_1_size/2)) + size[0] / 2,
+                          scale_factor * ((object_2_pos[1] + camera_y_distance) - (user_size/2)) + size[1] / 2,
+                          scale_factor * object_1_size, scale_factor * object_1_size))
 
-    object_3 = pygame.draw.rect(screen, (100, 255, 100),
-                         (scale_factor * ((object_3_pos[0] + camera_x_distance) - (object_3_size/2)) + size[0] / 2,
-                               scale_factor * ((object_3_pos[1] + camera_y_distance) - (object_size/2)) + size[1] / 2,
-                               scale_factor * object_3_size, scale_factor * object_3_size))
-    
-  collision_top = False
+    object_2 = pygame.draw.rect(screen, (100, 255, 100),
+                         (scale_factor * ((object_3_pos[0] + camera_x_distance) - (object_2_size/2)) + size[0] / 2,
+                          scale_factor * ((object_3_pos[1] + camera_y_distance) - (user_size/2)) + size[1] / 2,
+                          scale_factor * object_2_size, scale_factor * object_2_size))
+
+    object_list = [object_1, object_2]
+
+    collision_top = False
     collision_bottom = False
     collision_left = False
     collision_right = False
 
     for i in range(len(object_list)):
         if collision_bottom == False:
-            collision_bottom = (pygame.Rect.colliderect(object, (object_list[i][0], object_list[i][1] + scale_factor * collision_allowance * movement_speed, object_list[i][2], object_list[i][3])))
+            collision_bottom = (pygame.Rect.colliderect(user, (object_list[i][0], object_list[i][1] + scale_factor * collision_allowance * movement_speed, object_list[i][2], object_list[i][3])))
 
         if collision_top == False:
-            collision_top = (pygame.Rect.colliderect(object, (object_list[i][0], object_list[i][1] - scale_factor * collision_allowance * movement_speed, object_list[i][2], object_list[i][3])))
+            collision_top = (pygame.Rect.colliderect(user, (object_list[i][0], object_list[i][1] - scale_factor * collision_allowance * movement_speed, object_list[i][2], object_list[i][3])))
 
         if collision_left == False:
-            collision_left = (pygame.Rect.colliderect(object, (object_list[i][0] + scale_factor * collision_allowance * movement_speed, object_list[i][1], object_list[i][2], object_list[i][3])))
+            collision_left = (pygame.Rect.colliderect(user, (object_list[i][0] + scale_factor * collision_allowance * movement_speed, object_list[i][1], object_list[i][2], object_list[i][3])))
 
         if collision_right == False:
-            collision_right = (pygame.Rect.colliderect(object, (object_list[i][0] - scale_factor * collision_allowance * movement_speed, object_list[i][1], object_list[i][2], object_list[i][3])))
+            collision_right = (pygame.Rect.colliderect(user, (object_list[i][0] - scale_factor * collision_allowance * movement_speed, object_list[i][1], object_list[i][2], object_list[i][3])))
 
     if keys[pygame.K_w] and collision_bottom == False:
         camera_pos[1] += -movement_speed
@@ -107,7 +109,6 @@ while run:
 
     if keys[pygame.K_a] and collision_left == False:
         camera_pos[0] += -movement_speed
-
-
+        
     frame += 1
     pygame.display.update()
