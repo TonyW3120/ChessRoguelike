@@ -1,5 +1,7 @@
 import pygame
 
+from ship_class import Ship
+
 pygame.init()
 pygame.font.init()
 my_font = pygame.font.SysFont('Arial', 20)
@@ -24,6 +26,13 @@ object_2_size = 100
 collision_allowance = 3
 collision = False
 min_border_thickness = 1
+
+# Objects: test = Ship((pos_x, pos_x), size, (r, g, b))
+
+object_1 = Ship((400, 400), 10, (255, 100, 100))
+object_2 = Ship((200, 200), 50, (100, 255, 100))
+object_list = [object_1, object_2]
+
 
 while run:
 
@@ -70,19 +79,13 @@ while run:
 
     object_1_visual = 0
 
-    object_1 = [object_1_visual, object_1_pos, object_1_size]
-
-    object_2_visual = 0
-
-    object_2 = [object_2_visual, object_2_pos, object_1_size]
-
     object_list = [object_1, object_2]
 
     for i in range(len(object_list)):
-        object_list[i][0] = pygame.draw.rect(screen, (255, 100, 100),
-                         (scale_factor * ((object_list[i][1][0] + camera_x_distance) - (object_list[i][2] / 2)) + size[0] / 2,
-                          scale_factor * ((object_list[i][1][1] + camera_y_distance) - (user_size / 2)) + size[1] / 2,
-                          scale_factor * object_list[i][2], scale_factor * object_list[i][2]))
+        object_list[i].visual = pygame.draw.rect(screen, object_list[i].color,
+                         (scale_factor * ((object_list[i].position[0] + camera_x_distance) - (object_list[i].size / 2)) + size[0] / 2,
+                          scale_factor * ((object_list[i].position[1] + camera_y_distance) - (user_size / 2)) + size[1] / 2,
+                          scale_factor * object_list[i].size, scale_factor * object_list[i].size))
 
 
     collision_top = False
@@ -90,26 +93,28 @@ while run:
     collision_left = False
     collision_right = False
 
-    for i in range(len(object_list)):
-        if collision_bottom == False:
-            collision_bottom = (pygame.Rect.colliderect(user, (
-            object_list[i][0], object_list[i][1] + scale_factor * collision_allowance * movement_speed,
-            object_list[i][2], object_list[i][3])))
+    #INCOMPLETE
 
-        if collision_top == False:
-            collision_top = (pygame.Rect.colliderect(user, (
-            object_list[i][0], object_list[i][1] - scale_factor * collision_allowance * movement_speed,
-            object_list[i][2], object_list[i][3])))
-
-        if collision_left == False:
-            collision_left = (pygame.Rect.colliderect(user, (
-            object_list[i][0] + scale_factor * collision_allowance * movement_speed, object_list[i][1],
-            object_list[i][2], object_list[i][3])))
-
-        if collision_right == False:
-            collision_right = (pygame.Rect.colliderect(user, (
-            object_list[i][0] - scale_factor * collision_allowance * movement_speed, object_list[i][1],
-            object_list[i][2], object_list[i][3])))
+    # for i in range(len(object_list)):
+    #     if collision_bottom == False:
+    #         collision_bottom = (pygame.Rect.colliderect(user, (
+    #         object_list[i][0][0], object_list[i][0][1] + scale_factor * collision_allowance * movement_speed,
+    #         object_list[i][0][2], object_list[i][0][2])))
+    #
+    #     if collision_top == False:
+    #         collision_top = (pygame.Rect.colliderect(user, (
+    #         object_list[i][0][0], object_list[i][0][1] - scale_factor * collision_allowance * movement_speed,
+    #         object_list[i][0][2], object_list[i][0][3])))
+    #
+    #     if collision_left == False:
+    #         collision_left = (pygame.Rect.colliderect(user, (
+    #         object_list[i][0][0] + scale_factor * collision_allowance * movement_speed, object_list[i][0][1],
+    #         object_list[i][0][2], object_list[i][0][3])))
+    #
+    #     if collision_right == False:
+    #         collision_right = (pygame.Rect.colliderect(user, (
+    #         object_list[i][0][0] - scale_factor * collision_allowance * movement_speed, object_list[i][0][1],
+    #         object_list[i][0][2], object_list[i][0][3])))
 
     if keys[pygame.K_w] and collision_bottom == False:
         camera_pos[1] += -movement_speed
