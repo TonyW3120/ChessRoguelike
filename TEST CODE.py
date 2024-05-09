@@ -1,5 +1,5 @@
 import pygame
-
+import math
 from ship_class import Ship
 
 pygame.init()
@@ -32,7 +32,6 @@ object_1 = Ship((400, 400), 10, (255, 100, 100))
 object_2 = Ship((200, 200), 50, (100, 255, 100))
 object_list = [object_1, object_2]
 
-
 while run:
 
     clock.tick(fps)
@@ -45,14 +44,18 @@ while run:
 
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
-            
-            #FIX ABOMINATION 
-            if event.button == 1:
-                object_list.append(Ship((((((event.pos[0] - camera_x_distance) - 20) - size[0]*2)/scale_factor,
-                          ((event.pos[1] - camera_y_distance) - 20) - size[1]*2)/scale_factor), 10, (255, 100, 100)))
-            if event.button == 3:
-                object_list.append(Ship((event.pos[0], event.pos[1]), 50, (100, 255, 100)))
 
+            # FIX ABOMINATION
+            if event.button == 1:
+                object_list.append(Ship(((event.pos[0]/scale_factor) - camera_x_distance + (10/2) - (size[0] / 2)/scale_factor,
+                                         (event.pos[1]/scale_factor) - camera_y_distance + (10/2) - (size[1] / 2)/scale_factor),
+                                          10, (255, 100, 100)))
+
+            if event.button == 3:
+                object_list.append(Ship(((event.pos[0] / scale_factor) - camera_x_distance + (10 / 2) - (size[0] / 2)/scale_factor,
+                                         (event.pos[1] / scale_factor) - camera_y_distance + (10 / 2) - (size[1] / 2)/scale_factor),
+                                         50, (100, 255, 100)))
+                
         if event.type == pygame.KEYDOWN:
             if event.unicode == " ":
                 print("test")
@@ -83,45 +86,48 @@ while run:
                             (scale_factor * (user_pos[0] - (user_size / 2)) + size[0] / 2,
                              scale_factor * (user_pos[1] - (user_size / 2)) + size[1] / 2,
                              scale_factor * user_size, scale_factor * user_size),
-                            max(int(10 * scale_factor), min_border_thickness))
+                             max(int(10 * scale_factor), min_border_thickness))
 
     object_1_visual = 0
 
     for i in range(len(object_list)):
         object_list[i].visual = pygame.draw.rect(screen, object_list[i].color,
-                         (scale_factor * ((object_list[i].position[0] + camera_x_distance) - (object_list[i].size / 2)) + size[0] / 2,
-                          scale_factor * ((object_list[i].position[1] + camera_y_distance) - (user_size / 2)) + size[1] / 2,
-                          scale_factor * object_list[i].size, scale_factor * object_list[i].size))
+                            (scale_factor * ((object_list[i].position[0] + camera_x_distance) - (object_list[i].size / 2)) + size[0] / 2,
+                             scale_factor * ((object_list[i].position[1] + camera_y_distance) - (object_list[i].size / 2)) + size[1] / 2,
+                             scale_factor * object_list[i].size,
+                             scale_factor * object_list[i].size))
 
     collision_top = False
     collision_bottom = False
     collision_left = False
     collision_right = False
 
-    #INCOMPLETE
+    # INCOMPLETE
 
     for i in range(len(object_list)):
         if collision_bottom == False:
             collision_bottom = (pygame.Rect.colliderect(user, (
-            object_list[i].visual[0], object_list[i].visual[1] + scale_factor * collision_allowance * movement_speed,
-            object_list[i].visual[2], object_list[i].visual[2])))
-
-
+                object_list[i].visual[0],
+                object_list[i].visual[1] + scale_factor * collision_allowance * movement_speed,
+                object_list[i].visual[2], object_list[i].visual[2])))
 
         if collision_top == False:
             collision_top = (pygame.Rect.colliderect(user, (
-            object_list[i].visual[0], object_list[i].visual[1] - scale_factor * collision_allowance * movement_speed,
-            object_list[i].visual[2], object_list[i].visual[3])))
+                object_list[i].visual[0],
+                object_list[i].visual[1] - scale_factor * collision_allowance * movement_speed,
+                object_list[i].visual[2], object_list[i].visual[3])))
 
         if collision_left == False:
             collision_left = (pygame.Rect.colliderect(user, (
-            object_list[i].visual[0] + scale_factor * collision_allowance * movement_speed, object_list[i].visual[1],
-            object_list[i].visual[2], object_list[i].visual[3])))
+                object_list[i].visual[0] + scale_factor * collision_allowance * movement_speed,
+                object_list[i].visual[1],
+                object_list[i].visual[2], object_list[i].visual[3])))
 
         if collision_right == False:
             collision_right = (pygame.Rect.colliderect(user, (
-            object_list[i].visual[0] - scale_factor * collision_allowance * movement_speed, object_list[i].visual[1],
-            object_list[i].visual[2], object_list[i].visual[3])))
+                object_list[i].visual[0] - scale_factor * collision_allowance * movement_speed,
+                object_list[i].visual[1],
+                object_list[i].visual[2], object_list[i].visual[3])))
 
     if keys[pygame.K_w] and collision_bottom == False:
         camera_pos[1] += -movement_speed
