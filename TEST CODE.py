@@ -29,13 +29,13 @@ collision = False
 min_border_thickness = 1
 mouse_current_position = [400, 400]
 
-
 # Objects: test = Ship(pos_x, pos_x, size, (r, g, b))
 
 object_1 = Ship(400, 400, 10, (255, 100, 100))
 object_2 = Ship(200, 200, 50, (100, 255, 100))
 object_list = [object_1, object_2]
 bullet_list = []
+enemy_bullet_list = []
 
 
 def angle(position1, position2):
@@ -81,6 +81,23 @@ while run:
     camera_x_distance = home_point[0] - camera_pos[0]
     camera_y_distance = home_point[1] - camera_pos[1]
 
+    if frame == 75:
+        for i in range(len(object_list)):
+            enemy_bullet_list.append(Bullet(
+                visual_position_modifier(object_list[i].visual[0], object_list[i].visual[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
+                visual_position_modifier(object_list[i].visual[0], object_list[i].visual[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
+                5, (255, 255, 100), camera_pos))
+            if enemy_bullet_list[i].target[0] < enemy_bullet_list[i].position_x:
+                enemy_bullet_list[i].delta_x = -math.cos(
+                    angle((enemy_bullet_list[i].position_x, enemy_bullet_list[i].position_y), enemy_bullet_list[i].target))
+                enemy_bullet_list[i].delta_y = -math.sin(
+                    angle((enemy_bullet_list[i].position_x, enemy_bullet_list[i].position_y), enemy_bullet_list[i].target))
+            else:
+                enemy_bullet_list[i].delta_x = math.cos(
+                    angle((enemy_bullet_list[i].position_x, enemy_bullet_list[i].position_y), enemy_bullet_list[i].target))
+                enemy_bullet_list[i].delta_y = math.sin(
+                    angle((enemy_bullet_list[i].position_x, enemy_bullet_list[i].position_y), enemy_bullet_list[i].target))
+
     for event in pygame.event.get():
         if event.type == pygame.MOUSEMOTION:
             mouse_current_position = visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)
@@ -105,15 +122,27 @@ while run:
                     movement_speed = 1
 
             if event.unicode == "f":
-                bullet_list.append(Bullet((400 / scale_factor) - camera_x_distance + (10 / 2) - (screen_size[0] / 2) / scale_factor,
-                                          (400 / scale_factor) - camera_y_distance + (10 / 2) - (screen_size[1] / 2) / scale_factor,
-                                          5, (255, 255, 100), mouse_current_position, ))
+                bullet_list.append(Bullet(visual_position_modifier(400, 410, camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
+                                          visual_position_modifier(400, 410, camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
+                                          5, (255, 255, 100), mouse_current_position))
                 if bullet_list[-1].target[0] < bullet_list[-1].position_x:
                     bullet_list[-1].delta_x = -math.cos(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
                     bullet_list[-1].delta_y = -math.sin(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
                 else:
                     bullet_list[-1].delta_x = math.cos(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
                     bullet_list[-1].delta_y = math.sin(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
+
+                bullet_list.append(Bullet(visual_position_modifier(400, 380, camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
+                                          visual_position_modifier(400, 380, camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
+                                          5, (255, 255, 100), mouse_current_position))
+                if bullet_list[-1].target[0] < bullet_list[-1].position_x:
+                    bullet_list[-1].delta_x = -math.cos(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
+                    bullet_list[-1].delta_y = -math.sin(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
+                else:
+                    bullet_list[-1].delta_x = math.cos(
+                        angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
+                    bullet_list[-1].delta_y = math.sin(
+                        angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
 
         if event.type == pygame.MOUSEWHEEL:
 
@@ -147,6 +176,23 @@ while run:
                            (game_position_modifier(bullet_list[i].position_x, bullet_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, bullet_list[i].size, scale_factor)[0],
                                  game_position_modifier(bullet_list[i].position_x, bullet_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, bullet_list[i].size, scale_factor)[1],
                                  scale_factor * bullet_list[i].size, scale_factor * bullet_list[i].size))
+
+    for i in range(len(enemy_bullet_list)):
+        enemy_bullet_list[i].visual = pygame.draw.rect(screen, enemy_bullet_list[i].color,
+                           (game_position_modifier(enemy_bullet_list[i].position_x, enemy_bullet_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, enemy_bullet_list[i].size, scale_factor)[0],
+                                 game_position_modifier(enemy_bullet_list[i].position_x, enemy_bullet_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, enemy_bullet_list[i].size, scale_factor)[1],
+                                 scale_factor * enemy_bullet_list[i].size, scale_factor * enemy_bullet_list[i].size))
+
+    #DEBUG
+    for h in range(bullet_movement_speed):
+        for i in range(len(enemy_bullet_list)):
+            enemy_bullet_list[i].position_x += enemy_bullet_list[i].delta_x
+            enemy_bullet_list[i].position_y += enemy_bullet_list[i].delta_y
+            if round(enemy_bullet_list[i].position_x, 0) == round(enemy_bullet_list[i].target[0], 0) and round(enemy_bullet_list[i].position_y, 0) == round(enemy_bullet_list[i].target[1], 0):
+                enemy_bullet_list.pop(i)
+                break
+            else:
+                continue
 
     bullet_collision_occurred = False
     for h in range(bullet_movement_speed):
