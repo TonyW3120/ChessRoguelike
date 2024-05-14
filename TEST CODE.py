@@ -1,5 +1,6 @@
 import pygame
 import math
+import random
 from ship_class import Ship
 from bullet_class import Bullet
 
@@ -28,6 +29,7 @@ collision_allowance = 2
 collision = False
 min_border_thickness = 1
 mouse_current_position = [400, 400]
+enemy_accuracy = 50
 
 # Objects: test = Ship(pos_x, pos_x, size, (r, g, b))
 
@@ -85,18 +87,22 @@ while run:
         for i in range(len(object_list)):
             enemy_bullet_list.append(Bullet(
                 visual_position_modifier(object_list[i].visual[0], object_list[i].visual[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
-                visual_position_modifier(object_list[i].visual[0], object_list[i].visual[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
-                5, (255, 255, 100), camera_pos))
-            if enemy_bullet_list[i].target[0] < enemy_bullet_list[i].position_x:
-                enemy_bullet_list[i].delta_x = -math.cos(
-                    angle((enemy_bullet_list[i].position_x, enemy_bullet_list[i].position_y), enemy_bullet_list[i].target))
-                enemy_bullet_list[i].delta_y = -math.sin(
-                    angle((enemy_bullet_list[i].position_x, enemy_bullet_list[i].position_y), enemy_bullet_list[i].target))
-            else:
-                enemy_bullet_list[i].delta_x = math.cos(
-                    angle((enemy_bullet_list[i].position_x, enemy_bullet_list[i].position_y), enemy_bullet_list[i].target))
-                enemy_bullet_list[i].delta_y = math.sin(
-                    angle((enemy_bullet_list[i].position_x, enemy_bullet_list[i].position_y), enemy_bullet_list[i].target))
+                visual_position_modifier(object_list[i].visual[0] , object_list[i].visual[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
+                5, (255, 255, 100), (camera_pos[0] + random.randint(-50, 50)*scale_factor, camera_pos[1] + random.randint(-50, 50)*scale_factor)))
+            if enemy_bullet_list[-1].course_set == False:
+                if enemy_bullet_list[-1].target[0] < enemy_bullet_list[-1].position_x:
+                    enemy_bullet_list[-1].delta_x = -math.cos(
+                        angle((enemy_bullet_list[-1].position_x, enemy_bullet_list[-1].position_y), enemy_bullet_list[-1].target))
+                    enemy_bullet_list[-1].delta_y = -math.sin(
+                        angle((enemy_bullet_list[-1].position_x, enemy_bullet_list[-1].position_y), enemy_bullet_list[-1].target))
+                    enemy_bullet_list[-1].course_set = True
+                else:
+                    enemy_bullet_list[-1].delta_x = math.cos(
+                        angle((enemy_bullet_list[-1].position_x, enemy_bullet_list[-1].position_y), enemy_bullet_list[-1].target))
+                    enemy_bullet_list[-1].delta_y = math.sin(
+                        angle((enemy_bullet_list[-1].position_x, enemy_bullet_list[-1].position_y), enemy_bullet_list[-1].target))
+                    enemy_bullet_list[-1].course_set = True
+
 
     for event in pygame.event.get():
         if event.type == pygame.MOUSEMOTION:
