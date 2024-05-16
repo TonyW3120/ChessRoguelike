@@ -8,3 +8,5 @@ class Bullet(object):
         self.target = target
         self.delta_x = 0
         self.delta_y = 0
+        self.course_set = False
+        self.initial_scale_factor = 0
