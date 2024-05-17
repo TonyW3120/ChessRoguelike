@@ -182,12 +182,12 @@ while run:
          scale_factor * user_size, scale_factor * user_size),
          max(int(10*scale_factor), min_border_thickness))
 
-    #FIX
-    pygame.draw.line(screen, (150, 50, 50), (400, 400 + round(10*scale_factor, 0)), mouse_current_position)
+    pygame.draw.line(screen, (50, 150, 50), (400, 400 + round(10 * scale_factor, 0)), game_position_modifier(mouse_current_position[0], mouse_current_position[1], camera_x_distance, camera_y_distance, screen_size, 0, scale_factor))
+    pygame.draw.line(screen, (50, 150, 50), (400, 400 + round(-10 * scale_factor, 0)), game_position_modifier(mouse_current_position[0], mouse_current_position[1], camera_x_distance, camera_y_distance, screen_size, 0, scale_factor))
 
     for i in range(len(object_list)):
         object_list[i].visual = pygame.draw.rect(screen, object_list[i].color,
-                           (game_position_modifier(object_list[i].position_x,object_list[i].position_x, camera_x_distance, camera_y_distance, screen_size, object_list[i].size, scale_factor)[0],
+                           (game_position_modifier(object_list[i].position_x,object_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, object_list[i].size, scale_factor)[0],
                                  game_position_modifier(object_list[i].position_x,object_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, object_list[i].size, scale_factor)[1],
                                  scale_factor * object_list[i].size, scale_factor * object_list[i].size))
 
