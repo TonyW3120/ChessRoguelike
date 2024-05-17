@@ -34,11 +34,12 @@ mouse_current_position = [400, 400]
 enemy_accuracy = 50
 enemy_rate_of_fire = 3
 seconds_fire_counter = 0
+enemy_movement_speed = 1
 
-# Objects: test = Ship(pos_x, pos_x, size, (r, g, b))
+# Objects: test = Ship(pos_x, pos_x, size, (r, g, b), health)
 
-object_1 = Ship(400, 400, 10, (255, 100, 100))
-object_2 = Ship(200, 200, 50, (100, 255, 100))
+object_1 = Ship(400, 400, 10, (255, 100, 100), 1)
+object_2 = Ship(200, 200, 50, (100, 255, 100), 1)
 object_list = [object_1, object_2]
 bullet_list = []
 enemy_bullet_list = []
@@ -87,6 +88,7 @@ while run:
     camera_x_distance = home_point[0] - camera_pos[0]
     camera_y_distance = home_point[1] - camera_pos[1]
 
+# TIME RELATED STUFF
     if frame == 75:
         seconds_fire_counter += 1
 
@@ -112,7 +114,7 @@ while run:
                     enemy_bullet_list[-1].course_set = True
         seconds_fire_counter = 0
 
-
+# EVENTS
     for event in pygame.event.get():
         if event.type == pygame.MOUSEMOTION:
             mouse_current_position = visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)
@@ -121,12 +123,12 @@ while run:
             if event.button == 1:
                 object_list.append(Ship(visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
                                         visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
-                                        10, (255, 100, 100)))
+                                        10, (255, 100, 100), 1))
 
             if event.button == 3:
                 object_list.append(Ship(visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
                                         visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
-                                        50, (100, 255, 100)))
+                                        50, (100, 255, 100), 10))
 
         if event.type == pygame.KEYDOWN:
             if event.unicode == " ":
@@ -162,12 +164,9 @@ while run:
                         angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
 
         if event.type == pygame.MOUSEWHEEL:
-
-            # zoom in
             if event.y == 1:
                 scale_factor += 0.05
 
-            # zoom out
             if event.y == -1:
                 scale_factor += -0.05
 
@@ -176,6 +175,7 @@ while run:
 
     keys = pygame.key.get_pressed()
 
+# VISUALS
     user = pygame.draw.rect(screen, (100, 100, 255),
         (scale_factor * (user_pos[0] - (user_size / 2)) + screen_size[0] / 2,
          scale_factor * (user_pos[1] - (user_size / 2)) + screen_size[1] / 2,
@@ -184,6 +184,19 @@ while run:
 
     pygame.draw.line(screen, (50, 150, 50), (400, 400 + round(10 * scale_factor, 0)), game_position_modifier(mouse_current_position[0], mouse_current_position[1], camera_x_distance, camera_y_distance, screen_size, 0, scale_factor))
     pygame.draw.line(screen, (50, 150, 50), (400, 400 + round(-10 * scale_factor, 0)), game_position_modifier(mouse_current_position[0], mouse_current_position[1], camera_x_distance, camera_y_distance, screen_size, 0, scale_factor))
+
+    #FIXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    full_death_check = False
+    while full_death_check is False and len(object_list) != 0:
+        death_occurred = False
+        for i in range(len(object_list)):
+            print(i)
+            if object_list[i].health <= 0:
+                object_list.pop(i)
+                death_occurred = True
+                break
+        if death_occurred is False:
+            full_death_check = True
 
     for i in range(len(object_list)):
         object_list[i].visual = pygame.draw.rect(screen, object_list[i].color,
@@ -203,7 +216,7 @@ while run:
                                  game_position_modifier(enemy_bullet_list[i].position_x, enemy_bullet_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, enemy_bullet_list[i].size, scale_factor)[1],
                                  scale_factor * enemy_bullet_list[i].size, scale_factor * enemy_bullet_list[i].size))
 
-    #DEBUG
+# MOVEMENT AND COLLISION
     for h in range(bullet_movement_speed):
         for i in range(len(enemy_bullet_list)):
             enemy_bullet_list[i].position_x += enemy_bullet_list[i].delta_x
@@ -222,7 +235,7 @@ while run:
             bullet_list[i].position_y += bullet_list[i].delta_y
             for j in range(len(object_list)):
                 if pygame.Rect.colliderect(bullet_list[i].visual, object_list[j].visual) == True:
-                    object_list.pop(j)
+                    object_list[i].health -= 1
                     bullet_list.pop(i)
                     i -= 1
                     print(i)
