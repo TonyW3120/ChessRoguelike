@@ -1,4 +1,4 @@
-class Ship(object):
+class Piece(object):
     def __init__(self, position_x, position_y, size, color, health):
         self.visual = 0
         self.position_x = position_x
