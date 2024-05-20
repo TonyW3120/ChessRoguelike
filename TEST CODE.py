@@ -166,7 +166,7 @@ while run:
             bullet_list[i].position_x += bullet_list[i].delta_x
             bullet_list[i].position_y += bullet_list[i].delta_y
             for j in range(len(object_list)):
-                if pygame.Rect.colliderect(bullet_list[i].visual, object_list[j].visual) == True:
+                if pygame.Rect.colliderect(bullet_list[i].visual, object_list[j].visual):
                     object_list[j].health -= 1
                     bullet_list.pop(i)
                     i -= 1
@@ -174,7 +174,6 @@ while run:
                     break
                 else:
                     continue
-                break
             if bullet_collision_occurred:
                 break
             if round(bullet_list[i].position_x, 0) == round(bullet_list[i].target[0], 0) and round(bullet_list[i].position_y, 0) == round(bullet_list[i].target[1], 0):
@@ -189,40 +188,40 @@ while run:
     collision_right = False
 
     for i in range(len(object_list)):
-        if collision_bottom == False:
+        if not collision_bottom:
             collision_bottom = (pygame.Rect.colliderect(user, (
                 object_list[i].visual[0],
                 object_list[i].visual[1] + scale_factor * collision_allowance * movement_speed,
                 object_list[i].visual[2], object_list[i].visual[2])))
 
-        if collision_top == False:
+        if not collision_top:
             collision_top = (pygame.Rect.colliderect(user, (
                 object_list[i].visual[0],
                 object_list[i].visual[1] - scale_factor * collision_allowance * movement_speed,
                 object_list[i].visual[2], object_list[i].visual[3])))
 
-        if collision_left == False:
+        if not collision_left:
             collision_left = (pygame.Rect.colliderect(user, (
                 object_list[i].visual[0] + scale_factor * collision_allowance * movement_speed,
                 object_list[i].visual[1],
                 object_list[i].visual[2], object_list[i].visual[3])))
 
-        if collision_right == False:
+        if not collision_right:
             collision_right = (pygame.Rect.colliderect(user, (
                 object_list[i].visual[0] - scale_factor * collision_allowance * movement_speed,
                 object_list[i].visual[1],
                 object_list[i].visual[2], object_list[i].visual[3])))
 
-    if keys[pygame.K_w] and collision_bottom == False:
+    if keys[pygame.K_w] and not collision_bottom:
         camera_pos[1] += -movement_speed
 
-    if keys[pygame.K_s] and collision_top == False:
+    if keys[pygame.K_s] and not collision_top:
         camera_pos[1] += movement_speed
 
-    if keys[pygame.K_d] and collision_right == False:
+    if keys[pygame.K_d] and not collision_right:
         camera_pos[0] += movement_speed
 
-    if keys[pygame.K_a] and collision_left == False:
+    if keys[pygame.K_a] and not collision_left:
         camera_pos[0] += -movement_speed
 
     frame += 1
