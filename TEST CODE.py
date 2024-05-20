@@ -1,7 +1,7 @@
 import pygame
 import math
-import random
-from ship_class import Ship
+import time
+from piece_class import Piece
 from bullet_class import Bullet
 
 pygame.init()
@@ -18,8 +18,9 @@ fps = 75
 
 user_pos = [0, 0]
 user_size = 50
-user_cannon_1_position = (400, 410)
-user_cannon_2_position = (400, 380)
+user_cannon_1_position = (400, 400)
+user_last_fired = 0
+user_cooldown_fire = 1
 
 home_point = (0, 0)
 camera_pos = [300, 300]
@@ -31,19 +32,13 @@ collision_allowance = 2
 collision = False
 min_border_thickness = 1
 mouse_current_position = [400, 400]
-enemy_accuracy = 50
-enemy_rate_of_fire = 3
-seconds_fire_counter = 0
-enemy_movement_speed = 1
 
 # Objects: test = Ship(pos_x, pos_x, size, (r, g, b), health)
 
-object_1 = Ship(400, 400, 10, (255, 100, 100), 1)
-object_2 = Ship(200, 200, 50, (100, 255, 100), 1)
+object_1 = Piece(400, 400, 10, (255, 100, 100), 1)
+object_2 = Piece(200, 200, 50, (100, 255, 100), 10)
 object_list = [object_1, object_2]
 bullet_list = []
-enemy_bullet_list = []
-
 
 def angle(position1, position2):
     # angle = math.degrees(math.atan(-((position2[1] - position1[1])/((position2[0] - position1[0]) + 0.0000001))))
@@ -88,47 +83,18 @@ while run:
     camera_x_distance = home_point[0] - camera_pos[0]
     camera_y_distance = home_point[1] - camera_pos[1]
 
-# TIME RELATED STUFF
-    if frame == 75:
-        seconds_fire_counter += 1
-
-    if seconds_fire_counter == enemy_rate_of_fire:
-        for i in range(len(object_list)):
-            enemy_bullet_list.append(Bullet(
-                visual_position_modifier(object_list[i].visual[0], object_list[i].visual[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
-                visual_position_modifier(object_list[i].visual[0] , object_list[i].visual[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
-                5, (255, 255, 100), (camera_pos[0] + random.randint(-enemy_accuracy, enemy_accuracy)*scale_factor, camera_pos[1] + random.randint(-50, 50)*scale_factor)))
-            enemy_bullet_list[-1].initial_scale_factor = scale_factor
-            if enemy_bullet_list[-1].course_set == False:
-                if enemy_bullet_list[-1].target[0] < enemy_bullet_list[-1].position_x:
-                    enemy_bullet_list[-1].delta_x = -math.cos(
-                        angle((enemy_bullet_list[-1].position_x, enemy_bullet_list[-1].position_y), enemy_bullet_list[-1].target))
-                    enemy_bullet_list[-1].delta_y = -math.sin(
-                        angle((enemy_bullet_list[-1].position_x, enemy_bullet_list[-1].position_y), enemy_bullet_list[-1].target))
-                    enemy_bullet_list[-1].course_set = True
-                else:
-                    enemy_bullet_list[-1].delta_x = math.cos(
-                        angle((enemy_bullet_list[-1].position_x, enemy_bullet_list[-1].position_y), enemy_bullet_list[-1].target))
-                    enemy_bullet_list[-1].delta_y = math.sin(
-                        angle((enemy_bullet_list[-1].position_x, enemy_bullet_list[-1].position_y), enemy_bullet_list[-1].target))
-                    enemy_bullet_list[-1].course_set = True
-        seconds_fire_counter = 0
-
+    mouse_current_position = visual_position_modifier(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)
 # EVENTS
     for event in pygame.event.get():
-        if event.type == pygame.MOUSEMOTION:
-            mouse_current_position = visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)
-
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
-                object_list.append(Ship(visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
-                                        visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
-                                        10, (255, 100, 100), 1))
-
+                object_list.append(Piece(visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
+                                         visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
+                                         10, (255, 100, 100), 1))
             if event.button == 3:
-                object_list.append(Ship(visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
-                                        visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
-                                        50, (100, 255, 100), 10))
+                object_list.append(Piece(visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
+                                         visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
+                                         50, (100, 255, 100), 10))
 
         if event.type == pygame.KEYDOWN:
             if event.unicode == " ":
@@ -138,9 +104,10 @@ while run:
                 elif movement_speed == 3:
                     movement_speed = 1
 
-            if event.unicode == "f":
-                bullet_list.append(Bullet(visual_position_modifier(400, 410, camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
-                                          visual_position_modifier(400, 410, camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
+            if event.unicode == "f" and time.time() - user_last_fired >= user_cooldown_fire:
+                user_last_fired = time.time()
+                bullet_list.append(Bullet(visual_position_modifier(400, 400, camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
+                                          visual_position_modifier(400, 400, camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
                                           5, (255, 255, 100), mouse_current_position))
 
                 if bullet_list[-1].target[0] < bullet_list[-1].position_x:
@@ -149,19 +116,6 @@ while run:
                 else:
                     bullet_list[-1].delta_x = math.cos(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
                     bullet_list[-1].delta_y = math.sin(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
-
-                bullet_list.append(Bullet(visual_position_modifier(400, 380, camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
-                                          visual_position_modifier(400, 380, camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
-                                          5, (255, 255, 100), mouse_current_position))
-
-                if bullet_list[-1].target[0] < bullet_list[-1].position_x:
-                    bullet_list[-1].delta_x = -math.cos(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
-                    bullet_list[-1].delta_y = -math.sin(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
-                else:
-                    bullet_list[-1].delta_x = math.cos(
-                        angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
-                    bullet_list[-1].delta_y = math.sin(
-                        angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
 
         if event.type == pygame.MOUSEWHEEL:
             if event.y == 1:
@@ -182,21 +136,16 @@ while run:
          scale_factor * user_size, scale_factor * user_size),
          max(int(10*scale_factor), min_border_thickness))
 
-    pygame.draw.line(screen, (50, 150, 50), (400, 400 + round(10 * scale_factor, 0)), game_position_modifier(mouse_current_position[0], mouse_current_position[1], camera_x_distance, camera_y_distance, screen_size, 0, scale_factor))
-    pygame.draw.line(screen, (50, 150, 50), (400, 400 + round(-10 * scale_factor, 0)), game_position_modifier(mouse_current_position[0], mouse_current_position[1], camera_x_distance, camera_y_distance, screen_size, 0, scale_factor))
+    pygame.draw.line(screen, (50, 150, 50), (400, 400), game_position_modifier(mouse_current_position[0], mouse_current_position[1], camera_x_distance, camera_y_distance, screen_size, 0, scale_factor))
 
-    #FIXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    full_death_check = False
-    while full_death_check is False and len(object_list) != 0:
-        death_occurred = False
+    while len(object_list) != 0:
         for i in range(len(object_list)):
-            print(i)
             if object_list[i].health <= 0:
                 object_list.pop(i)
-                death_occurred = True
                 break
-        if death_occurred is False:
-            full_death_check = True
+            else:
+                continue
+        break
 
     for i in range(len(object_list)):
         object_list[i].visual = pygame.draw.rect(screen, object_list[i].color,
@@ -210,24 +159,7 @@ while run:
                                  game_position_modifier(bullet_list[i].position_x, bullet_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, bullet_list[i].size, scale_factor)[1],
                                  scale_factor * bullet_list[i].size, scale_factor * bullet_list[i].size))
 
-    for i in range(len(enemy_bullet_list)):
-        enemy_bullet_list[i].visual = pygame.draw.rect(screen, enemy_bullet_list[i].color,
-                           (game_position_modifier(enemy_bullet_list[i].position_x, enemy_bullet_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, enemy_bullet_list[i].size, scale_factor)[0],
-                                 game_position_modifier(enemy_bullet_list[i].position_x, enemy_bullet_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, enemy_bullet_list[i].size, scale_factor)[1],
-                                 scale_factor * enemy_bullet_list[i].size, scale_factor * enemy_bullet_list[i].size))
-
 # MOVEMENT AND COLLISION
-    for h in range(bullet_movement_speed):
-        for i in range(len(enemy_bullet_list)):
-            enemy_bullet_list[i].position_x += enemy_bullet_list[i].delta_x
-            enemy_bullet_list[i].position_y += enemy_bullet_list[i].delta_y
-            if round(enemy_bullet_list[i].position_x, 0) == round(enemy_bullet_list[i].target[0], 0) and \
-                round(enemy_bullet_list[i].position_y, 0) == round(enemy_bullet_list[i].target[1], 0):
-                enemy_bullet_list.pop(i)
-                break
-            else:
-                continue
-
     bullet_collision_occurred = False
     for h in range(bullet_movement_speed):
         for i in range(len(bullet_list)):
@@ -235,10 +167,9 @@ while run:
             bullet_list[i].position_y += bullet_list[i].delta_y
             for j in range(len(object_list)):
                 if pygame.Rect.colliderect(bullet_list[i].visual, object_list[j].visual) == True:
-                    object_list[i].health -= 1
+                    object_list[j].health -= 1
                     bullet_list.pop(i)
                     i -= 1
-                    print(i)
                     bullet_collision_occurred = True
                     break
                 else:
