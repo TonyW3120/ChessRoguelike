@@ -23,7 +23,7 @@ user_last_fired = 0
 user_cooldown_fire = 1
 
 home_point = (0, 0)
-camera_pos = [300, 300]
+camera_pos = [400, 400]
 
 scale_factor = 1
 movement_speed = 1
@@ -32,10 +32,12 @@ collision_allowance = 2
 collision = False
 min_border_thickness = 1
 mouse_current_position = [400, 400]
+grid_square_size = 100
+grid_size = 10
 
 # Objects: test = Ship(pos_x, pos_x, size, (r, g, b), health)
 
-object_1 = Piece(400, 400, 10, (255, 100, 100), 1)
+object_1 = Piece(600, 600, 10, (255, 100, 100), 1)
 object_2 = Piece(200, 200, 50, (100, 255, 100), 10)
 object_list = [object_1, object_2]
 bullet_list = []
@@ -137,6 +139,17 @@ while run:
          max(int(10*scale_factor), min_border_thickness))
 
     pygame.draw.line(screen, (50, 150, 50), (400, 400), game_position_modifier(mouse_current_position[0], mouse_current_position[1], camera_x_distance, camera_y_distance, screen_size, 0, scale_factor))
+
+    #INCOMPLETE
+    for i in range(int((grid_square_size*grid_size)/grid_square_size) + 1):
+        pygame.draw.line(screen, (255, 255, 255),
+                         game_position_modifier(i * grid_square_size, 400 - (grid_square_size*grid_size)/2, camera_x_distance, camera_y_distance, screen_size, 0, scale_factor),
+                         game_position_modifier(i * grid_square_size, 400 + (grid_square_size*grid_size)/2, camera_x_distance, camera_y_distance, screen_size, 0, scale_factor))\
+
+    for i in range(int((grid_square_size*grid_size)/grid_square_size) + 1):
+        pygame.draw.line(screen, (255, 255, 255),
+                         game_position_modifier(400 - (grid_square_size*grid_size)/2, i * grid_square_size, camera_x_distance, camera_y_distance,screen_size, 0, scale_factor),
+                         game_position_modifier(400 + (grid_square_size*grid_size)/2, i * grid_square_size, camera_x_distance, camera_y_distance, screen_size, 0, scale_factor))
 
     while len(object_list) != 0:
         for i in range(len(object_list)):
