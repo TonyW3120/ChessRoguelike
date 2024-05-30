@@ -132,10 +132,12 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
+                # FIX, DOESNT WORK WHEN MOVING
                 piece_list.append(Piece(visual_position_modifier(round((event.pos[0]/grid_square_size), 0) * grid_square_size, round((event.pos[1]/grid_square_size), 0) * grid_square_size, camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
                                         visual_position_modifier(round((event.pos[0]/grid_square_size), 0) * grid_square_size, round((event.pos[1]/grid_square_size), 0) * grid_square_size, camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
                                         10, (255, 100, 100), 1))
             if event.button == 3:
+                # FIX, DOESNT WORK WHEN MOVING
                 piece_list.append(Piece(visual_position_modifier(round((event.pos[0]/grid_square_size), 0) * grid_square_size, round((event.pos[1]/grid_square_size), 0) * grid_square_size, camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
                                         visual_position_modifier(round((event.pos[0]/grid_square_size), 0) * grid_square_size, round((event.pos[1]/grid_square_size), 0) * grid_square_size, camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
                                         50, (100, 255, 100), 10))
