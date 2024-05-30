@@ -39,6 +39,7 @@ grid_square_size = 100
 grid_size = 20
 grid = []
 grid_visual = []
+grid_objects = []
 
 scale_factor = 1
 bullet_movement_speed = 3
@@ -92,6 +93,14 @@ for i in range(grid_size):
                                   (screen_size[1] - (grid_square_size * grid_size) / 2) + i * grid_square_size,
                                    grid_square_size, 0))
 
+#INCOMPLETE, TRY TO ALIGN ENEMIES WITH GRID
+for i in range(grid_size):
+    grid_objects.append([])
+    for j in range(grid_size):
+        grid_objects[i].append([])
+
+
+
 # Game start
 
 while run:
@@ -111,7 +120,7 @@ while run:
     user_critical_chance = user_stats[4]
     user_dodge_chance = user_stats[5]
 
-    screen.fill((0, 0, 0))
+    screen.fill((230, 230, 230))
 
     my_font = pygame.font.SysFont('Arial', int(scale_factor * 20))
 
@@ -123,12 +132,12 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
-                piece_list.append(Piece(visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
-                                        visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
+                piece_list.append(Piece(visual_position_modifier(round((event.pos[0]/grid_square_size), 0) * grid_square_size, round((event.pos[1]/grid_square_size), 0) * grid_square_size, camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
+                                        visual_position_modifier(round((event.pos[0]/grid_square_size), 0) * grid_square_size, round((event.pos[1]/grid_square_size), 0) * grid_square_size, camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
                                         10, (255, 100, 100), 1))
             if event.button == 3:
-                piece_list.append(Piece(visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
-                                        visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
+                piece_list.append(Piece(visual_position_modifier(round((event.pos[0]/grid_square_size), 0) * grid_square_size, round((event.pos[1]/grid_square_size), 0) * grid_square_size, camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
+                                        visual_position_modifier(round((event.pos[0]/grid_square_size), 0) * grid_square_size, round((event.pos[1]/grid_square_size), 0) * grid_square_size, camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
                                         50, (100, 255, 100), 10))
 
             if event.button == 2:
@@ -180,15 +189,19 @@ while run:
         for j in range(grid_size):
             grid_visual[i][j].visual = pygame.draw.rect(screen, grid_visual[i][j].color,
                            (game_position_modifier(grid_visual[i][j].position_x, grid_visual[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_visual[i][j].size, scale_factor)[0],
-                                 game_position_modifier(grid_visual[i][j].position_x, grid_visual[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_visual[i][j].size, scale_factor)[1],
-                                (scale_factor * grid_visual[i][j].size) + int(round(2*scale_factor, 0)), (scale_factor * grid_visual[i][j].size) + int(round(2*scale_factor, 0))), int(round(2*scale_factor, 0)))
+                            game_position_modifier(grid_visual[i][j].position_x, grid_visual[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_visual[i][j].size, scale_factor)[1],
+                           (scale_factor * grid_visual[i][j].size) + int(round(2*scale_factor, 0)), (scale_factor * grid_visual[i][j].size) + int(round(2*scale_factor, 0))))
 
     for i in range(grid_size):
         for j in range(grid_size):
             if user.colliderect(grid_visual[i][j].visual):
                 grid_visual[i][j] = (Tile((screen_size[0]/2 - (grid_square_size * grid_size) / 2) + j * grid_square_size,
                                           (screen_size[1]/2 - (grid_square_size * grid_size) / 2) + i * grid_square_size,
-                                          grid_square_size, 1))
+                                          grid_square_size, 2))
+            if (i + j)%2 == 0:
+                grid_visual[i][j] = (Tile((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + j * grid_square_size,
+                                    (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + i * grid_square_size,
+                                    grid_square_size, 1))
             else:
                 grid_visual[i][j] = (Tile((screen_size[0]/2 - (grid_square_size * grid_size) / 2) + j * grid_square_size,
                                           (screen_size[1]/2 - (grid_square_size * grid_size) / 2) + i * grid_square_size,
@@ -205,21 +218,21 @@ while run:
 
     for i in range(len(piece_list)):
         piece_list[i].visual = pygame.draw.rect(screen, piece_list[i].color,
-                                                (game_position_modifier(piece_list[i].position_x, piece_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, piece_list[i].size, scale_factor)[0],
-                                                 game_position_modifier(piece_list[i].position_x, piece_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, piece_list[i].size, scale_factor)[1],
-                                                 scale_factor * piece_list[i].size, scale_factor * piece_list[i].size))
+                                               (game_position_modifier(piece_list[i].position_x, piece_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, piece_list[i].size, scale_factor)[0],
+                                                game_position_modifier(piece_list[i].position_x, piece_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, piece_list[i].size, scale_factor)[1],
+                                                scale_factor * piece_list[i].size, scale_factor * piece_list[i].size))
 
     for i in range(len(bullet_list)):
         bullet_list[i].visual = pygame.draw.rect(screen, bullet_list[i].color,
-                           (game_position_modifier(bullet_list[i].position_x, bullet_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, bullet_list[i].size, scale_factor)[0],
-                                 game_position_modifier(bullet_list[i].position_x, bullet_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, bullet_list[i].size, scale_factor)[1],
-                                 scale_factor * bullet_list[i].size, scale_factor * bullet_list[i].size))
+                                                (game_position_modifier(bullet_list[i].position_x, bullet_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, bullet_list[i].size, scale_factor)[0],
+                                                 game_position_modifier(bullet_list[i].position_x, bullet_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, bullet_list[i].size, scale_factor)[1],
+                                                 scale_factor * bullet_list[i].size, scale_factor * bullet_list[i].size))
 
     for i in range(len(consumable_list)):
         consumable_list[i].visual = pygame.draw.rect(screen, consumable_list[i].color,
-                                                (game_position_modifier(consumable_list[i].position_x, consumable_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, consumable_list[i].size, scale_factor)[0],
-                                                 game_position_modifier(consumable_list[i].position_x, consumable_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, consumable_list[i].size, scale_factor)[1],
-                                                 scale_factor * consumable_list[i].size, scale_factor * consumable_list[i].size))
+                                                    (game_position_modifier(consumable_list[i].position_x, consumable_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, consumable_list[i].size, scale_factor)[0],
+                                                     game_position_modifier(consumable_list[i].position_x, consumable_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, consumable_list[i].size, scale_factor)[1],
+                                                     scale_factor * consumable_list[i].size, scale_factor * consumable_list[i].size))
 
     user = pygame.draw.rect(screen, (100, 100, 255),
         (scale_factor * (user_pos[0] - (user_size / 2)) + screen_size[0] / 2,
