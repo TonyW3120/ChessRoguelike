@@ -7,6 +7,10 @@ class Tile(object):
         self.variant = variant
         self.size = size
         if variant == 0:
-            self.color = (50, 50, 50)
+            self.color = (50, 50, 60)
         if variant == 1:
-            self.color = (200, 50, 50)
+            self.color = (200, 200, 210)
+        if variant == 2:
+            self.color = (200, 50, 60)
+        if variant == 3:
+            self.color = (50, 50, 210)
