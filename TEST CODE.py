@@ -99,8 +99,6 @@ for i in range(grid_size):
     for j in range(grid_size):
         grid_objects[i].append([])
 
-
-
 # Game start
 
 while run:
@@ -128,18 +126,20 @@ while run:
     camera_y_distance = home_point[1] - camera_pos[1]
 
     mouse_current_position = visual_position_modifier(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)
-# EVENTS
+    #FIX 
+    mouse_hitbox = pygame.Rect(int(mouse_current_position[0]), int(mouse_current_position[1]), 1, 1)
+# EVENT
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 # FIX, DOESNT WORK WHEN MOVING
-                piece_list.append(Piece(visual_position_modifier(round((event.pos[0]/grid_square_size), 0) * grid_square_size, round((event.pos[1]/grid_square_size), 0) * grid_square_size, camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
-                                        visual_position_modifier(round((event.pos[0]/grid_square_size), 0) * grid_square_size, round((event.pos[1]/grid_square_size), 0) * grid_square_size, camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
+                piece_list.append(Piece(visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
+                                        visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
                                         10, (255, 100, 100), 1))
             if event.button == 3:
                 # FIX, DOESNT WORK WHEN MOVING
-                piece_list.append(Piece(visual_position_modifier(round((event.pos[0]/grid_square_size), 0) * grid_square_size, round((event.pos[1]/grid_square_size), 0) * grid_square_size, camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
-                                        visual_position_modifier(round((event.pos[0]/grid_square_size), 0) * grid_square_size, round((event.pos[1]/grid_square_size), 0) * grid_square_size, camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
+                piece_list.append(Piece(visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
+                                        visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
                                         50, (100, 255, 100), 10))
 
             if event.button == 2:
@@ -196,11 +196,21 @@ while run:
 
     for i in range(grid_size):
         for j in range(grid_size):
+            print("Mouse hitbox:", mouse_hitbox)
+            print()
+            print("Grid visual", grid_visual[i][j].visual)
             if user.colliderect(grid_visual[i][j].visual):
                 grid_visual[i][j] = (Tile((screen_size[0]/2 - (grid_square_size * grid_size) / 2) + j * grid_square_size,
                                           (screen_size[1]/2 - (grid_square_size * grid_size) / 2) + i * grid_square_size,
                                           grid_square_size, 2))
-            if (i + j)%2 == 0:
+            
+            #FIX 
+            if mouse_hitbox.colliderect(grid_visual[i][j].visual):
+                grid_visual[i][j] = (Tile((screen_size[0]/2 - (grid_square_size * grid_size) / 2) + j * grid_square_size,
+                                          (screen_size[1]/2 - (grid_square_size * grid_size) / 2) + i * grid_square_size,
+                                          grid_square_size, 3))
+
+            elif (i + j)%2 == 0:
                 grid_visual[i][j] = (Tile((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + j * grid_square_size,
                                     (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + i * grid_square_size,
                                     grid_square_size, 1))
