@@ -46,7 +46,7 @@ bullet_movement_speed = 3
 collision_allowance = 2
 collision = False
 min_border_thickness = 1
-mouse_visual_position = [400, 400]
+mouse_current_position = [400, 400]
 min_zoom_out = 0.5
 max_zoom_out = 1.5
 
@@ -125,12 +125,9 @@ while run:
     camera_x_distance = home_point[0] - camera_pos[0]
     camera_y_distance = home_point[1] - camera_pos[1]
 
-    mouse_visual_position = visual_position_modifier(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)
-    mouse_game_position = game_position_modifier(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], camera_x_distance, camera_y_distance, screen_size, 0, scale_factor)
+    mouse_current_position = visual_position_modifier(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)
     #FIX 
-    #mouse_hitbox = pygame.Rect(int(mouse_game_position[0]), int(mouse_game_position[1]), 1, 1)
-    #mouse_hitbox = pygame.Rect(int(mouse_visual_position[0]), int(mouse_visual_position[1]), 1, 1)
-    mouse_hitbox = pygame.Rect(int(pygame.mouse.get_pos()[0]), int(pygame.mouse.get_pos()[1]), 1, 1)
+    mouse_hitbox = pygame.Rect(int(mouse_current_position[0]), int(mouse_current_position[1]), 1, 1)
 # EVENT
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -162,7 +159,7 @@ while run:
                 user_last_fired = time.time()
                 bullet_list.append(Bullet(visual_position_modifier(400, 400, camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
                                           visual_position_modifier(400, 400, camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
-                                          5, (255, 255, 100), mouse_visual_position))
+                                          5, (255, 255, 100), mouse_current_position))
 
                 if bullet_list[-1].target[0] < bullet_list[-1].position_x:
                     bullet_list[-1].delta_x = -math.cos(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
@@ -194,35 +191,39 @@ while run:
         for j in range(grid_size):
             grid_visual[i][j].visual = pygame.draw.rect(screen, grid_visual[i][j].color,
                            (game_position_modifier(grid_visual[i][j].position_x, grid_visual[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_visual[i][j].size, scale_factor)[0],
-                            game_position_modifier(grid_visual[i][j].position_x, grid_visual[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_visual[i][j].size, scale_factor)[1],
-                           (scale_factor * grid_visual[i][j].size) + int(round(2*scale_factor, 0)), (scale_factor * grid_visual[i][j].size) + int(round(2*scale_factor, 0))))
+                                game_position_modifier(grid_visual[i][j].position_x, grid_visual[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_visual[i][j].size, scale_factor)[1],
+                                (scale_factor * grid_visual[i][j].size) + int(round(2*scale_factor, 0)), (scale_factor * grid_visual[i][j].size) + int(round(2*scale_factor, 0))))
 
     for i in range(grid_size):
         for j in range(grid_size):
-            if (i + j)%2 == 0:
-                grid_visual[i][j] = Tile((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + j * grid_square_size,
-                                         (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + i * grid_square_size,
-                                          grid_square_size, 1)
-            if (i + j)%2 == 0:
-                grid_visual[i][j] = Tile((screen_size[0]/2 - (grid_square_size * grid_size) / 2) + j * grid_square_size,
-                                         (screen_size[1]/2 - (grid_square_size * grid_size) / 2) + i * grid_square_size,
-                                          grid_square_size, 0)
-
-                print(grid_visual[i][j].rect)
-                print(grid_visual[i][j].visual)
-
-            if user.colliderect(grid_visual[i][j]):
+            if user.colliderect(grid_visual[i][j].visual):
                 grid_visual[i][j] = (Tile((screen_size[0]/2 - (grid_square_size * grid_size) / 2) + j * grid_square_size,
                                           (screen_size[1]/2 - (grid_square_size * grid_size) / 2) + i * grid_square_size,
                                           grid_square_size, 2))
 
-            #FIX
-            if mouse_hitbox.colliderect(grid_visual[i][j]):
+                grid_visual[i][j].visual = pygame.draw.rect(screen, grid_visual[i][j].color,
+                                                            (game_position_modifier(grid_visual[i][j].position_x, grid_visual[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_visual[i][j].size, scale_factor)[0],
+                                                             game_position_modifier(grid_visual[i][j].position_x, grid_visual[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_visual[i][j].size, scale_factor)[1],
+                                                             (scale_factor * grid_visual[i][j].size) + int(round(2 * scale_factor, 0)), (scale_factor * grid_visual[i][j].size) + int(round(2 * scale_factor, 0))))
+
+            if mouse_hitbox.colliderect(grid_visual[i][j].visual):
                 grid_visual[i][j] = (Tile((screen_size[0]/2 - (grid_square_size * grid_size) / 2) + j * grid_square_size,
                                           (screen_size[1]/2 - (grid_square_size * grid_size) / 2) + i * grid_square_size,
                                           grid_square_size, 3))
-                grid_objects[i][j] = 1
 
+                grid_visual[i][j].visual = pygame.draw.rect(screen, grid_visual[i][j].color,
+                                                            (game_position_modifier(grid_visual[i][j].position_x, grid_visual[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_visual[i][j].size, scale_factor)[0],
+                                                             game_position_modifier(grid_visual[i][j].position_x, grid_visual[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_visual[i][j].size, scale_factor)[1],
+                                                             (scale_factor * grid_visual[i][j].size) + int(round(2 * scale_factor, 0)), (scale_factor * grid_visual[i][j].size) + int(round(2 * scale_factor, 0))))
+
+            elif (i + j)%2 == 0:
+                grid_visual[i][j] = (Tile((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + j * grid_square_size,
+                                    (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + i * grid_square_size,
+                                    grid_square_size, 1))
+            else:
+                grid_visual[i][j] = (Tile((screen_size[0]/2 - (grid_square_size * grid_size) / 2) + j * grid_square_size,
+                                          (screen_size[1]/2 - (grid_square_size * grid_size) / 2) + i * grid_square_size,
+                                          grid_square_size, 0))
 
     while len(piece_list) != 0:
         for i in range(len(piece_list)):
@@ -257,7 +258,7 @@ while run:
          scale_factor * user_size, scale_factor * user_size),
          max(int(10*scale_factor), min_border_thickness))
 
-    pygame.draw.line(screen, (50, 150, 50), (400, 400), game_position_modifier(mouse_visual_position[0], mouse_visual_position[1], camera_x_distance, camera_y_distance, screen_size, 0, scale_factor))
+    pygame.draw.line(screen, (50, 150, 50), (400, 400), game_position_modifier(mouse_current_position[0], mouse_current_position[1], camera_x_distance, camera_y_distance, screen_size, 0, scale_factor))
 
 # MOVEMENT AND COLLISION
     bullet_collision_occurred = False
