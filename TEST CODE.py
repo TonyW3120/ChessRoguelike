@@ -58,6 +58,7 @@ object_2 = Piece(200, 200, 50, (100, 255, 100), 10)
 piece_list = [object_1, object_2]
 bullet_list = []
 consumable_list = []
+selected_tile = (0,0)
 
 # Functions
 def angle(position1, position2):
@@ -127,7 +128,7 @@ while run:
 
     mouse_current_position = visual_position_modifier(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)
     #FIX 
-    mouse_hitbox = pygame.Rect(int(mouse_current_position[0]), int(mouse_current_position[1]), 1, 1)
+    mouse_hitbox = pygame.Rect(int(pygame.mouse.get_pos()[0]), int(pygame.mouse.get_pos()[1]), 1, 1)
 # EVENT
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -136,6 +137,7 @@ while run:
                 piece_list.append(Piece(visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
                                         visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
                                         10, (255, 100, 100), 1))
+                
             if event.button == 3:
                 # FIX, DOESNT WORK WHEN MOVING
                 piece_list.append(Piece(visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
@@ -215,6 +217,8 @@ while run:
                                                             (game_position_modifier(grid_visual[i][j].position_x, grid_visual[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_visual[i][j].size, scale_factor)[0],
                                                              game_position_modifier(grid_visual[i][j].position_x, grid_visual[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_visual[i][j].size, scale_factor)[1],
                                                              (scale_factor * grid_visual[i][j].size) + int(round(2 * scale_factor, 0)), (scale_factor * grid_visual[i][j].size) + int(round(2 * scale_factor, 0))))
+                
+                selected_tile = (i,j)
 
             elif (i + j)%2 == 0:
                 grid_visual[i][j] = (Tile((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + j * grid_square_size,
@@ -224,6 +228,15 @@ while run:
                 grid_visual[i][j] = (Tile((screen_size[0]/2 - (grid_square_size * grid_size) / 2) + j * grid_square_size,
                                           (screen_size[1]/2 - (grid_square_size * grid_size) / 2) + i * grid_square_size,
                                           grid_square_size, 0))
+                
+    for i in range(grid_size):
+        for j in range(grid_size):
+            if grid_objects[i][j] == 1:
+                #INCOMPLETE
+                piece_list.append(Piece(
+                    visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
+                    visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
+                    10, (255, 100, 100), 1))
 
     while len(piece_list) != 0:
         for i in range(len(piece_list)):
