@@ -1,3 +1,5 @@
+import random
+
 import pygame
 import math
 import time
@@ -31,15 +33,17 @@ user_movement_speed = user_stats[3]
 user_critical_chance = user_stats[4]
 user_dodge_chance = user_stats[5]
 
-
 home_point = (0, 0)
 camera_pos = [400, 400]
 
 grid_square_size = 100
-grid_size = 20
+grid_size = 8
 grid = []
 grid_visual = []
 grid_objects = []
+
+#1 - 100, number refers to percentage
+consumable_drop_rate = 100
 
 scale_factor = 1
 bullet_movement_speed = 3
@@ -50,19 +54,17 @@ mouse_current_position = [400, 400]
 min_zoom_out = 0.5
 max_zoom_out = 1.5
 
-
 # Objects: test = Ship(pos_x, pos_x, size, (r, g, b), health)
 
-object_1 = Piece(600, 600, 10, (255, 100, 100), 1)
-object_2 = Piece(200, 200, 50, (100, 255, 100), 10)
-piece_list = [object_1, object_2]
+piece_list = []
 bullet_list = []
 consumable_list = []
-selected_tile = (0,0)
+selected_tile = (0, 0)
+
 
 # Functions
 def angle(position1, position2):
-    angle = math.atan((position2[1] - position1[1])/(position2[0] - position1[0] + 0.0000001))
+    angle = math.atan((position2[1] - position1[1]) / (position2[0] - position1[0] + 0.0000001))
     return angle
 
 
@@ -76,6 +78,7 @@ def game_position_modifier(position_x, position_y, camera_x_distance, camera_y_d
     new_position = (scale_factor * ((position_x + camera_x_distance) - (object_size / 2)) + screen_size[0] / 2,
                     scale_factor * ((position_y + camera_y_distance) - (object_size / 2)) + screen_size[1] / 2)
     return new_position
+
 
 # Grid creation
 for i in range(grid_size):
@@ -92,9 +95,9 @@ for i in range(grid_size):
     for j in range(grid_size):
         grid_visual[i][j] = (Tile((screen_size[0] - (grid_square_size * grid_size) / 2) + j * grid_square_size,
                                   (screen_size[1] - (grid_square_size * grid_size) / 2) + i * grid_square_size,
-                                   grid_square_size, 0))
+                                  grid_square_size, 0))
 
-#INCOMPLETE, TRY TO ALIGN ENEMIES WITH GRID
+# INCOMPLETE, TRY TO ALIGN ENEMIES WITH GRID
 for i in range(grid_size):
     grid_objects.append([])
     for j in range(grid_size):
@@ -127,27 +130,37 @@ while run:
     camera_y_distance = home_point[1] - camera_pos[1]
 
     mouse_current_position = visual_position_modifier(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)
-    #FIX 
     mouse_hitbox = pygame.Rect(int(pygame.mouse.get_pos()[0]), int(pygame.mouse.get_pos()[1]), 1, 1)
-# EVENT
+
+    # EVENT
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:
-                # FIX, DOESNT WORK WHEN MOVING
-                piece_list.append(Piece(visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
-                                        visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
-                                        10, (255, 100, 100), 1))
-                
-            if event.button == 3:
-                # FIX, DOESNT WORK WHEN MOVING
-                piece_list.append(Piece(visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
-                                        visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
-                                        50, (100, 255, 100), 10))
+            if event.button == 1 and grid_objects[selected_tile[0]][selected_tile[1]] == []:
+                grid_objects[selected_tile[0]][selected_tile[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
+                                                                          (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
+                                                                          25, (255, 100, 100), 1, (selected_tile[0], selected_tile[1])))
 
-            if event.button == 2:
-                consumable_list.append(Consumable(visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
-                                                  visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
-                                                  20, (255, 200, 200), 0))
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
+                                         (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
+                                         25, (255, 100, 100), 1, (selected_tile[0], selected_tile[1])))
+
+            if event.button == 3 and grid_objects[selected_tile[0]][selected_tile[1]] == []:
+                grid_objects[selected_tile[0]][selected_tile[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
+                                                                          (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
+                                                                          50, (100, 255, 100), 5, (selected_tile[0], selected_tile[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
+                                        50, (100, 255, 100), 5, (selected_tile[0], selected_tile[1])))
+
+            if event.button == 2 and grid_objects[selected_tile[0]][selected_tile[1]] == []:
+                grid_objects[selected_tile[0]][selected_tile[1]] = (Consumable((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
+                                                                               (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
+                                                                               20, 0, (selected_tile[0], selected_tile[1])))
+
+                consumable_list.append(Consumable((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
+                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
+                                                  20, 0, (selected_tile[0], selected_tile[1])))
 
         if event.type == pygame.KEYDOWN:
             if event.unicode == " ":
@@ -170,6 +183,57 @@ while run:
                     bullet_list[-1].delta_x = math.cos(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
                     bullet_list[-1].delta_y = math.sin(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
 
+            # PAWN
+            if event.unicode == "1" and grid_objects[selected_tile[0]][selected_tile[1]] == []:
+                grid_objects[selected_tile[0]][selected_tile[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
+                                                                          (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
+                                                                          20, (70, 70, 80), 1, (selected_tile[0], selected_tile[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
+                                        20, (70, 70, 80), 1, (selected_tile[0], selected_tile[1])))
+
+            # KNIGHT
+            if event.unicode == "2" and grid_objects[selected_tile[0]][selected_tile[1]] == []:
+                grid_objects[selected_tile[0]][selected_tile[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
+                                                                          (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
+                                                                          30, (60, 60, 90), 1, (selected_tile[0], selected_tile[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
+                                        30, (60, 60, 90), 1, (selected_tile[0], selected_tile[1])))
+
+            # BISHOP
+            if event.unicode == "3" and grid_objects[selected_tile[0]][selected_tile[1]] == []:
+                grid_objects[selected_tile[0]][selected_tile[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
+                                                                          (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
+                                                                          30, (60, 80, 70), 1, (selected_tile[0], selected_tile[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
+                                        30, (60, 80, 70), 1, (selected_tile[0], selected_tile[1])))
+
+            # ROOK
+            if event.unicode == "4" and grid_objects[selected_tile[0]][selected_tile[1]] == []:
+                grid_objects[selected_tile[0]][selected_tile[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
+                                                                          (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
+                                                                          30, (80, 60, 70), 1, (selected_tile[0], selected_tile[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
+                                        30, (80, 60, 70), 1, (selected_tile[0], selected_tile[1])))
+
+            # QUEEN
+            if event.unicode == "5" and grid_objects[selected_tile[0]][selected_tile[1]] == []:
+                grid_objects[selected_tile[0]][selected_tile[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
+                                                                          (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
+                                                                          40, (70, 70, 80), 1, (selected_tile[0], selected_tile[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
+                                        40, (70, 70, 80), 1, (selected_tile[0], selected_tile[1])))
+
+
         if event.type == pygame.MOUSEWHEEL:
             if scale_factor <= max_zoom_out and event.y == 1:
                 scale_factor += 0.05
@@ -182,7 +246,7 @@ while run:
 
     keys = pygame.key.get_pressed()
 
-# VISUALS
+    # VISUALS
     user = pygame.draw.rect(screen, (100, 100, 255),
                             (scale_factor * (user_pos[0] - (user_size / 2)) + screen_size[0] / 2,
                              scale_factor * (user_pos[1] - (user_size / 2)) + screen_size[1] / 2,
@@ -192,15 +256,15 @@ while run:
     for i in range(grid_size):
         for j in range(grid_size):
             grid_visual[i][j].visual = pygame.draw.rect(screen, grid_visual[i][j].color,
-                           (game_position_modifier(grid_visual[i][j].position_x, grid_visual[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_visual[i][j].size, scale_factor)[0],
-                                game_position_modifier(grid_visual[i][j].position_x, grid_visual[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_visual[i][j].size, scale_factor)[1],
-                                (scale_factor * grid_visual[i][j].size) + int(round(2*scale_factor, 0)), (scale_factor * grid_visual[i][j].size) + int(round(2*scale_factor, 0))))
+                                                        (game_position_modifier(grid_visual[i][j].position_x, grid_visual[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_visual[i][j].size, scale_factor)[0],
+                                                         game_position_modifier(grid_visual[i][j].position_x, grid_visual[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_visual[i][j].size, scale_factor)[1],
+                                                         (scale_factor * grid_visual[i][j].size) + int(round(2 * scale_factor, 0)), (scale_factor * grid_visual[i][j].size) + int(round(2 * scale_factor, 0))))
 
     for i in range(grid_size):
         for j in range(grid_size):
             if user.colliderect(grid_visual[i][j].visual):
-                grid_visual[i][j] = (Tile((screen_size[0]/2 - (grid_square_size * grid_size) / 2) + j * grid_square_size,
-                                          (screen_size[1]/2 - (grid_square_size * grid_size) / 2) + i * grid_square_size,
+                grid_visual[i][j] = (Tile((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (j+0.5) * grid_square_size,
+                                          (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (i+0.5) * grid_square_size,
                                           grid_square_size, 2))
 
                 grid_visual[i][j].visual = pygame.draw.rect(screen, grid_visual[i][j].color,
@@ -209,39 +273,51 @@ while run:
                                                              (scale_factor * grid_visual[i][j].size) + int(round(2 * scale_factor, 0)), (scale_factor * grid_visual[i][j].size) + int(round(2 * scale_factor, 0))))
 
             if mouse_hitbox.colliderect(grid_visual[i][j].visual):
-                grid_visual[i][j] = (Tile((screen_size[0]/2 - (grid_square_size * grid_size) / 2) + j * grid_square_size,
-                                          (screen_size[1]/2 - (grid_square_size * grid_size) / 2) + i * grid_square_size,
+                grid_visual[i][j] = (Tile((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (j+0.5) * grid_square_size,
+                                          (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (i+0.5) * grid_square_size,
                                           grid_square_size, 3))
 
                 grid_visual[i][j].visual = pygame.draw.rect(screen, grid_visual[i][j].color,
                                                             (game_position_modifier(grid_visual[i][j].position_x, grid_visual[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_visual[i][j].size, scale_factor)[0],
                                                              game_position_modifier(grid_visual[i][j].position_x, grid_visual[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_visual[i][j].size, scale_factor)[1],
                                                              (scale_factor * grid_visual[i][j].size) + int(round(2 * scale_factor, 0)), (scale_factor * grid_visual[i][j].size) + int(round(2 * scale_factor, 0))))
-                
-                selected_tile = (i,j)
 
-            elif (i + j)%2 == 0:
-                grid_visual[i][j] = (Tile((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + j * grid_square_size,
-                                    (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + i * grid_square_size,
-                                    grid_square_size, 1))
+                selected_tile = (i, j)
+
+            elif (i + j) % 2 == 0:
+                grid_visual[i][j] = (Tile((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (j+0.5) * grid_square_size,
+                                          (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (i+0.5) * grid_square_size,
+                                          grid_square_size, 1))
             else:
-                grid_visual[i][j] = (Tile((screen_size[0]/2 - (grid_square_size * grid_size) / 2) + j * grid_square_size,
-                                          (screen_size[1]/2 - (grid_square_size * grid_size) / 2) + i * grid_square_size,
+                grid_visual[i][j] = (Tile((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (j+0.5) * grid_square_size,
+                                          (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (i+0.5) * grid_square_size,
                                           grid_square_size, 0))
-                
+
     for i in range(grid_size):
         for j in range(grid_size):
-            if grid_objects[i][j] == 1:
-                #INCOMPLETE
-                piece_list.append(Piece(
-                    visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
-                    visual_position_modifier(event.pos[0], event.pos[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
-                    10, (255, 100, 100), 1))
+            if grid_objects[i][j]:
+                grid_objects[i][j].visual = pygame.draw.rect(screen, grid_objects[i][j].color,
+                                                             (game_position_modifier(grid_objects[i][j].position_x, grid_objects[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_objects[i][j].size, scale_factor)[0],
+                                                              game_position_modifier(grid_objects[i][j].position_x, grid_objects[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_objects[i][j].size, scale_factor)[1],
+                                                              (scale_factor * grid_objects[i][j].size) + int(round(2 * scale_factor, 0)), (scale_factor * grid_objects[i][j].size) + int(round(2 * scale_factor, 0))))
 
+    #Enemy Death
     while len(piece_list) != 0:
         for i in range(len(piece_list)):
             if piece_list[i].health <= 0:
+                if random.randint(0, 100) <= consumable_drop_rate:
+                    grid_objects[piece_list[i].tile[0]][piece_list[i].tile[1]] = Consumable((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (piece_list[i].tile[1] + 0.5) * grid_square_size,
+                                                                                            (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (piece_list[i].tile[0] + 0.5) * grid_square_size,
+                                                                                            20, random.randint(0, 5), (piece_list[i].tile[0], piece_list[i].tile[1]))
+
+                    consumable_list.append(Consumable((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (piece_list[i].tile[1] + 0.5) * grid_square_size,
+                                                      (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (piece_list[i].tile[0] + 0.5) * grid_square_size,
+                                                      20, grid_objects[piece_list[i].tile[0]][piece_list[i].tile[1]].variant, (piece_list[i].tile[0], piece_list[i].tile[1])))
+
+                else:
+                    grid_objects[piece_list[i].tile[0]][piece_list[i].tile[1]] = []
                 piece_list.pop(i)
+
                 break
             else:
                 continue
@@ -249,31 +325,31 @@ while run:
 
     for i in range(len(piece_list)):
         piece_list[i].visual = pygame.draw.rect(screen, piece_list[i].color,
-                                               (game_position_modifier(piece_list[i].position_x, piece_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, piece_list[i].size, scale_factor)[0],
-                                                game_position_modifier(piece_list[i].position_x, piece_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, piece_list[i].size, scale_factor)[1],
-                                                scale_factor * piece_list[i].size, scale_factor * piece_list[i].size))
+                                                (game_position_modifier(piece_list[i].position_x, piece_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, piece_list[i].size, scale_factor)[0],
+                                                 game_position_modifier(piece_list[i].position_x, piece_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, piece_list[i].size, scale_factor)[1],
+                                                 scale_factor * piece_list[i].size, scale_factor * piece_list[i].size))
 
     for i in range(len(bullet_list)):
         bullet_list[i].visual = pygame.draw.rect(screen, bullet_list[i].color,
-                                                (game_position_modifier(bullet_list[i].position_x, bullet_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, bullet_list[i].size, scale_factor)[0],
-                                                 game_position_modifier(bullet_list[i].position_x, bullet_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, bullet_list[i].size, scale_factor)[1],
-                                                 scale_factor * bullet_list[i].size, scale_factor * bullet_list[i].size))
+                                                 (game_position_modifier(bullet_list[i].position_x, bullet_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, bullet_list[i].size, scale_factor)[0],
+                                                  game_position_modifier(bullet_list[i].position_x, bullet_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, bullet_list[i].size, scale_factor)[1],
+                                                  scale_factor * bullet_list[i].size, scale_factor * bullet_list[i].size))
 
     for i in range(len(consumable_list)):
         consumable_list[i].visual = pygame.draw.rect(screen, consumable_list[i].color,
-                                                    (game_position_modifier(consumable_list[i].position_x, consumable_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, consumable_list[i].size, scale_factor)[0],
-                                                     game_position_modifier(consumable_list[i].position_x, consumable_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, consumable_list[i].size, scale_factor)[1],
-                                                     scale_factor * consumable_list[i].size, scale_factor * consumable_list[i].size))
+                                                     (game_position_modifier(consumable_list[i].position_x, consumable_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, consumable_list[i].size, scale_factor)[0],
+                                                      game_position_modifier(consumable_list[i].position_x, consumable_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, consumable_list[i].size, scale_factor)[1],
+                                                      scale_factor * consumable_list[i].size, scale_factor * consumable_list[i].size))
 
     user = pygame.draw.rect(screen, (100, 100, 255),
-        (scale_factor * (user_pos[0] - (user_size / 2)) + screen_size[0] / 2,
-         scale_factor * (user_pos[1] - (user_size / 2)) + screen_size[1] / 2,
-         scale_factor * user_size, scale_factor * user_size),
-         max(int(10*scale_factor), min_border_thickness))
+                            (scale_factor * (user_pos[0] - (user_size / 2)) + screen_size[0] / 2,
+                             scale_factor * (user_pos[1] - (user_size / 2)) + screen_size[1] / 2,
+                             scale_factor * user_size, scale_factor * user_size),
+                            max(int(10 * scale_factor), min_border_thickness))
 
     pygame.draw.line(screen, (50, 150, 50), (400, 400), game_position_modifier(mouse_current_position[0], mouse_current_position[1], camera_x_distance, camera_y_distance, screen_size, 0, scale_factor))
 
-# MOVEMENT AND COLLISION
+    # MOVEMENT AND COLLISION
     bullet_collision_occurred = False
     for h in range(bullet_movement_speed):
         for i in range(len(bullet_list)):
@@ -291,6 +367,7 @@ while run:
             if bullet_collision_occurred:
                 break
             if round(bullet_list[i].position_x, 0) == round(bullet_list[i].target[0], 0) and round(bullet_list[i].position_y, 0) == round(bullet_list[i].target[1], 0):
+                print(bullet_list[i].position_x, bullet_list[i].position_y)
                 bullet_list.pop(i)
                 break
             else:
@@ -298,9 +375,24 @@ while run:
 
     for i in range(len(consumable_list)):
         if pygame.Rect.colliderect(user, consumable_list[i].visual):
-            user_stats[consumable_list[i].improvement_attribute] += consumable_list[i].improvement_quantity
+            if consumable_list[i].variant != 2:
+                user_stats[consumable_list[i].improvement_attribute] += consumable_list[i].improvement_quantity
+            else:
+                user_stats[consumable_list[i].improvement_attribute] *= consumable_list[i].improvement_quantity
+
+            grid_objects[consumable_list[i].tile[0]][consumable_list[i].tile[1]] = []
             consumable_list.pop(i)
             print(user_stats)
+            i -= 1
+            break
+        else:
+            continue
+
+    for i in range(len(consumable_list)):
+        consumable_list[i].pickup_timer += 1
+        if consumable_list[i].pickup_timer == 10*fps:
+            grid_objects[consumable_list[i].tile[0]][consumable_list[i].tile[1]] = []
+            consumable_list.pop(i)
             i -= 1
             break
         else:
