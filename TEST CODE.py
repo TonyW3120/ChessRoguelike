@@ -1,5 +1,4 @@
 import random
-
 import pygame
 import math
 import time
@@ -41,9 +40,11 @@ grid_size = 8
 grid = []
 grid_visual = []
 grid_objects = []
+iframe_duration = 1
+iframe_active = False
 
 #1 - 100, number refers to percentage
-consumable_drop_rate = 100
+consumable_drop_rate = 10
 
 scale_factor = 1
 bullet_movement_speed = 3
@@ -135,24 +136,6 @@ while run:
     # EVENT
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1 and grid_objects[selected_tile[0]][selected_tile[1]] == []:
-                grid_objects[selected_tile[0]][selected_tile[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
-                                                                          (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
-                                                                          25, (255, 100, 100), 1, (selected_tile[0], selected_tile[1])))
-
-                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
-                                         (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
-                                         25, (255, 100, 100), 1, (selected_tile[0], selected_tile[1])))
-
-            if event.button == 3 and grid_objects[selected_tile[0]][selected_tile[1]] == []:
-                grid_objects[selected_tile[0]][selected_tile[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
-                                                                          (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
-                                                                          50, (100, 255, 100), 5, (selected_tile[0], selected_tile[1])))
-
-                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
-                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
-                                        50, (100, 255, 100), 5, (selected_tile[0], selected_tile[1])))
-
             if event.button == 2 and grid_objects[selected_tile[0]][selected_tile[1]] == []:
                 grid_objects[selected_tile[0]][selected_tile[1]] = (Consumable((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
                                                                                (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
@@ -187,51 +170,51 @@ while run:
             if event.unicode == "1" and grid_objects[selected_tile[0]][selected_tile[1]] == []:
                 grid_objects[selected_tile[0]][selected_tile[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
                                                                           (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
-                                                                          20, (70, 70, 80), 1, (selected_tile[0], selected_tile[1])))
+                                                                          0, (selected_tile[0], selected_tile[1])))
 
                 piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
                                         (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
-                                        20, (70, 70, 80), 1, (selected_tile[0], selected_tile[1])))
+                                        0, (selected_tile[0], selected_tile[1])))
 
             # KNIGHT
             if event.unicode == "2" and grid_objects[selected_tile[0]][selected_tile[1]] == []:
                 grid_objects[selected_tile[0]][selected_tile[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
                                                                           (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
-                                                                          30, (60, 60, 90), 1, (selected_tile[0], selected_tile[1])))
+                                                                          1, (selected_tile[0], selected_tile[1])))
 
                 piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
                                         (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
-                                        30, (60, 60, 90), 1, (selected_tile[0], selected_tile[1])))
+                                        1, (selected_tile[0], selected_tile[1])))
 
             # BISHOP
             if event.unicode == "3" and grid_objects[selected_tile[0]][selected_tile[1]] == []:
                 grid_objects[selected_tile[0]][selected_tile[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
                                                                           (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
-                                                                          30, (60, 80, 70), 1, (selected_tile[0], selected_tile[1])))
+                                                                          2, (selected_tile[0], selected_tile[1])))
 
                 piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
                                         (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
-                                        30, (60, 80, 70), 1, (selected_tile[0], selected_tile[1])))
+                                        2, (selected_tile[0], selected_tile[1])))
 
             # ROOK
             if event.unicode == "4" and grid_objects[selected_tile[0]][selected_tile[1]] == []:
                 grid_objects[selected_tile[0]][selected_tile[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
                                                                           (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
-                                                                          30, (80, 60, 70), 1, (selected_tile[0], selected_tile[1])))
+                                                                          3, (selected_tile[0], selected_tile[1])))
 
                 piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
                                         (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
-                                        30, (80, 60, 70), 1, (selected_tile[0], selected_tile[1])))
+                                        3, (selected_tile[0], selected_tile[1])))
 
             # QUEEN
             if event.unicode == "5" and grid_objects[selected_tile[0]][selected_tile[1]] == []:
                 grid_objects[selected_tile[0]][selected_tile[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
                                                                           (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
-                                                                          40, (70, 70, 80), 1, (selected_tile[0], selected_tile[1])))
+                                                                          4, (selected_tile[0], selected_tile[1])))
 
                 piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
                                         (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
-                                        40, (70, 70, 80), 1, (selected_tile[0], selected_tile[1])))
+                                        4, (selected_tile[0], selected_tile[1])))
 
 
         if event.type == pygame.MOUSEWHEEL:
@@ -410,11 +393,20 @@ while run:
                 piece_list[i].visual[1] + scale_factor * collision_allowance * user_movement_speed,
                 piece_list[i].visual[2], piece_list[i].visual[2])))
 
+    if collision_bottom:
+        user_stats[0] -= 10
+        print(user_stats)
+
         if not collision_top:
             collision_top = (pygame.Rect.colliderect(user, (
                 piece_list[i].visual[0],
                 piece_list[i].visual[1] - scale_factor * collision_allowance * user_movement_speed,
                 piece_list[i].visual[2], piece_list[i].visual[3])))
+
+        if collision_bottom:
+            user_stats[0] -= 10
+            camera_pos[1] += 10
+            print(user_stats)
 
         if not collision_left:
             collision_left = (pygame.Rect.colliderect(user, (
@@ -422,11 +414,19 @@ while run:
                 piece_list[i].visual[1],
                 piece_list[i].visual[2], piece_list[i].visual[3])))
 
+        if collision_bottom:
+            user_stats[0] -= 10
+            print(user_stats)
+
         if not collision_right:
             collision_right = (pygame.Rect.colliderect(user, (
                 piece_list[i].visual[0] - scale_factor * collision_allowance * user_movement_speed,
                 piece_list[i].visual[1],
                 piece_list[i].visual[2], piece_list[i].visual[3])))
+
+        if collision_bottom:
+            user_stats[0] -= 10
+            print(user_stats)
 
     if keys[pygame.K_w] and not collision_bottom:
         camera_pos[1] += -user_movement_speed
