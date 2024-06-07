@@ -1,42 +1,42 @@
 class Piece(object):
-    def __init__(self, position_x, position_y, size, color, health, tile):
-        self.visual = 0
-        self.position_x = position_x
-        self.position_y = position_y
-        self.size = size
-        self.color = color
-        self.health = health
-        self.tile = tile
-
-    # def __init__(self, position_x, position_y, variant, tile):
+    # def __init__(self, position_x, position_y, size, color, health, tile):
     #     self.visual = 0
     #     self.position_x = position_x
     #     self.position_y = position_y
+    #     self.size = size
+    #     self.color = color
+    #     self.health = health
     #     self.tile = tile
-    #     if variant == 0:
-    #         self.size = 10
-    #         self.color = (70, 70, 80)
-    #         self.health = health
-    #
-    #     if variant == 1:
-    #         self.size = 15
-    #         self.color = (60, 60, 90)
-    #         self.health = health
-    #
-    #     if variant == 2:
-    #         self.size = 15
-    #         self.color = (60, 80, 70)
-    #         self.health = health
-    #
-    #     if variant == 3:
-    #         self.size = 15
-    #         self.color = (80, 60, 70)
-    #         self.health = health
-    #
-    #     if variant == 4:
-    #         self.size = 25
-    #         self.color = (70, 70, 80)
-    #         self.health = health
+
+    def __init__(self, position_x, position_y, variant, tile):
+        self.visual = 0
+        self.position_x = position_x
+        self.position_y = position_y
+        self.tile = tile
+        if variant == 0:
+            self.size = 20
+            self.color = (70, 70, 80)
+            self.health = 1
+
+        if variant == 1:
+            self.size = 35
+            self.color = (60, 60, 90)
+            self.health = 3
+
+        if variant == 2:
+            self.size = 35
+            self.color = (60, 80, 70)
+            self.health = 3
+
+        if variant == 3:
+            self.size = 35
+            self.color = (80, 60, 70)
+            self.health = 5
+
+        if variant == 4:
+            self.size = 50
+            self.color = (70, 70, 80)
+            self.health = 10
 
 
 class Consumable(object):
