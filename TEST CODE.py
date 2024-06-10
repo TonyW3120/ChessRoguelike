@@ -24,13 +24,17 @@ user_size = 50
 user_cannon_1_position = (400, 400)
 user_last_fired = 0
 
-user_stats = [100, 1, 1, 1, 0, 0]
-user_health = user_stats[0]
+user_stats = [100, 1, 1, 1, 0, 0, 100]
+user_max_health = user_stats[0]
 user_damage = user_stats[1]
 user_attack_speed = user_stats[2]
 user_movement_speed = user_stats[3]
 user_critical_chance = user_stats[4]
 user_dodge_chance = user_stats[5]
+user_health = user_stats[6]
+
+user_regen_timer = time.time()
+user_regen_time = 10
 
 home_point = (0, 0)
 camera_pos = [400, 400]
@@ -44,7 +48,7 @@ iframe_duration = 1
 iframe_active = False
 
 #1 - 100, number refers to percentage
-consumable_drop_rate = 10
+consumable_drop_rate = 100
 
 scale_factor = 1
 bullet_movement_speed = 3
@@ -116,12 +120,13 @@ while run:
     if frame == fps + 1:
         frame = 1
 
-    user_health = user_stats[0]
+    user_max_health = user_stats[0]
     user_damage = user_stats[1]
     user_attack_speed = user_stats[2]
     user_movement_speed = user_stats[3]
     user_critical_chance = user_stats[4]
     user_dodge_chance = user_stats[5]
+    user_health = user_stats[6]
 
     screen.fill((230, 230, 230))
 
@@ -132,6 +137,9 @@ while run:
 
     mouse_current_position = visual_position_modifier(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], camera_x_distance, camera_y_distance, screen_size, scale_factor)
     mouse_hitbox = pygame.Rect(int(pygame.mouse.get_pos()[0]), int(pygame.mouse.get_pos()[1]), 1, 1)
+
+    if time.time() - user_regen_timer > user_regen_time and user_max_health > user_health:
+        user_stats[6] += 0.05
 
     # EVENT
     for event in pygame.event.get():
@@ -230,11 +238,19 @@ while run:
     keys = pygame.key.get_pressed()
 
     # VISUALS
-    user = pygame.draw.rect(screen, (100, 100, 255),
-                            (scale_factor * (user_pos[0] - (user_size / 2)) + screen_size[0] / 2,
-                             scale_factor * (user_pos[1] - (user_size / 2)) + screen_size[1] / 2,
-                             scale_factor * user_size, scale_factor * user_size),
-                            max(int(10 * scale_factor), min_border_thickness))
+    if user_health/user_max_health >= 0.8:
+        user_image = pygame.image.load("king_undamaged.png")
+    if 0.8 >= user_health/user_max_health >= 0.3:
+        user_image = pygame.image.load("king_damaged.png")
+    if user_health/user_max_health <= 0.3:
+        user_image = pygame.image.load("king_heavily_damaged.png")
+    user_image = pygame.transform.scale(user_image, (user_image.get_size()[0]*4*scale_factor, user_image.get_size()[1]*4*scale_factor))
+    user_size = user_image.get_size()
+
+    user = pygame.Rect(scale_factor * (user_pos[0] - (user_size[0] / 2)/scale_factor) + screen_size[0] / 2,
+                       scale_factor * (user_pos[1] - (user_size[1] / 2)/scale_factor) + screen_size[1] / 2,
+                       scale_factor * user_size[0], scale_factor * user_size[1])
+
 
     for i in range(grid_size):
         for j in range(grid_size):
@@ -276,13 +292,13 @@ while run:
                                           (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (i+0.5) * grid_square_size,
                                           grid_square_size, 0))
 
-    for i in range(grid_size):
-        for j in range(grid_size):
-            if grid_objects[i][j]:
-                grid_objects[i][j].visual = pygame.draw.rect(screen, grid_objects[i][j].color,
-                                                             (game_position_modifier(grid_objects[i][j].position_x, grid_objects[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_objects[i][j].size, scale_factor)[0],
-                                                              game_position_modifier(grid_objects[i][j].position_x, grid_objects[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_objects[i][j].size, scale_factor)[1],
-                                                              (scale_factor * grid_objects[i][j].size) + int(round(2 * scale_factor, 0)), (scale_factor * grid_objects[i][j].size) + int(round(2 * scale_factor, 0))))
+#IDK WHY IT WORKS WHEN I DELETE THIS CODE
+    # for i in range(grid_size):
+    #     for j in range(grid_size):
+    #         if grid_objects[i][j]:
+    #             grid_objects[i][j].visual = (game_position_modifier(grid_objects[i][j].position_x, grid_objects[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_objects[i][j].size[0], scale_factor)[0],
+    #                                       game_position_modifier(grid_objects[i][j].position_x, grid_objects[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_objects[i][j].size[1], scale_factor)[1],
+    #                                       scale_factor * grid_objects[i][j].size[0], scale_factor * grid_objects[i][j].size[1])
 
     #Enemy Death
     while len(piece_list) != 0:
@@ -307,10 +323,80 @@ while run:
         break
 
     for i in range(len(piece_list)):
-        piece_list[i].visual = pygame.draw.rect(screen, piece_list[i].color,
-                                                (game_position_modifier(piece_list[i].position_x, piece_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, piece_list[i].size, scale_factor)[0],
-                                                 game_position_modifier(piece_list[i].position_x, piece_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, piece_list[i].size, scale_factor)[1],
-                                                 scale_factor * piece_list[i].size, scale_factor * piece_list[i].size))
+        piece_list[i].rect = pygame.Rect((game_position_modifier(piece_list[i].position_x, piece_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, piece_list[i].size[0], scale_factor)[0],
+                                          game_position_modifier(piece_list[i].position_x, piece_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, piece_list[i].size[1], scale_factor)[1],
+                                          scale_factor * piece_list[i].size[0], scale_factor * piece_list[i].size[1]))
+
+        if piece_list[i].variant == 0:
+            if piece_list[i].health == 3:
+                piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("pawn_undamaged.png"),
+                                                   (pygame.image.load("pawn_undamaged.png").get_size()[0]*4*scale_factor, pygame.image.load("pawn_undamaged.png").get_size()[1]*4*scale_factor)),
+                                                   piece_list[i].rect)
+            elif piece_list[i].health == 2:
+                piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("pawn_damaged.png"),
+                                                   (pygame.image.load("pawn_damaged.png").get_size()[0] * 4 * scale_factor, pygame.image.load("pawn_damaged.png").get_size()[1] * 4 * scale_factor)),
+                                                   piece_list[i].rect)
+            else:
+                piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("pawn_heavily_damaged.png"),
+                                                   (pygame.image.load("pawn_heavily_damaged.png").get_size()[0]*4*scale_factor, pygame.image.load("pawn_heavily_damaged.png").get_size()[1]*4*scale_factor)),
+                                                   piece_list[i].rect)
+
+        if piece_list[i].variant == 1:
+            if piece_list[i].health > 7:
+                piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("knight_undamaged.png"),
+                                                   (pygame.image.load("knight_undamaged.png").get_size()[0]*4*scale_factor, pygame.image.load("knight_undamaged.png").get_size()[1]*4*scale_factor)),
+                                                   piece_list[i].rect)
+            elif piece_list[i].health > 4:
+                piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("knight_damaged.png"),
+                                                   (pygame.image.load("knight_damaged.png").get_size()[0] * 4 * scale_factor, pygame.image.load("knight_damaged.png").get_size()[1] * 4 * scale_factor)),
+                                                   piece_list[i].rect)
+            else:
+                piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("knight_heavily_damaged.png"),
+                                                   (pygame.image.load("knight_heavily_damaged.png").get_size()[0]*4*scale_factor, pygame.image.load("knight_heavily_damaged.png").get_size()[1]*4*scale_factor)),
+                                                   piece_list[i].rect)
+
+        if piece_list[i].variant == 2:
+            if piece_list[i].health > 7:
+                piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("bishop_undamaged.png"),
+                                                   (pygame.image.load("bishop_undamaged.png").get_size()[0]*4*scale_factor, pygame.image.load("bishop_undamaged.png").get_size()[1]*4*scale_factor)),
+                                                   piece_list[i].rect)
+            elif piece_list[i].health > 4:
+                piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("bishop_damaged.png"),
+                                                   (pygame.image.load("bishop_damaged.png").get_size()[0] * 4 * scale_factor, pygame.image.load("bishop_damaged.png").get_size()[1] * 4 * scale_factor)),
+                                                   piece_list[i].rect)
+            else:
+                piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("bishop_heavily_damaged.png"),
+                                                   (pygame.image.load("bishop_heavily_damaged.png").get_size()[0]*4*scale_factor, pygame.image.load("bishop_heavily_damaged.png").get_size()[1]*4*scale_factor)),
+                                                   piece_list[i].rect)
+
+        if piece_list[i].variant == 3:
+            if piece_list[i].health > 15:
+                piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("rook_undamaged.png"),
+                                                   (pygame.image.load("rook_undamaged.png").get_size()[0]*4*scale_factor, pygame.image.load("rook_undamaged.png").get_size()[1]*4*scale_factor)),
+                                                   piece_list[i].rect)
+            elif piece_list[i].health > 7:
+                piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("rook_damaged.png"),
+                                                   (pygame.image.load("rook_damaged.png").get_size()[0] * 4 * scale_factor, pygame.image.load("rook_damaged.png").get_size()[1] * 4 * scale_factor)),
+                                                   piece_list[i].rect)
+            else:
+                piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("rook_heavily_damaged.png"),
+                                                   (pygame.image.load("rook_heavily_damaged.png").get_size()[0]*4*scale_factor, pygame.image.load("rook_heavily_damaged.png").get_size()[1]*4*scale_factor)),
+                                                   piece_list[i].rect)
+
+        if piece_list[i].variant == 4:
+            if piece_list[i].health > 15:
+                piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("queen_undamaged.png"),
+                                                   (pygame.image.load("queen_undamaged.png").get_size()[0]*4*scale_factor, pygame.image.load("queen_undamaged.png").get_size()[1]*4*scale_factor)),
+                                                   piece_list[i].rect)
+            elif piece_list[i].health > 7:
+                piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("queen_damaged.png"),
+                                                   (pygame.image.load("queen_damaged.png").get_size()[0] * 4 * scale_factor, pygame.image.load("queen_damaged.png").get_size()[1] * 4 * scale_factor)),
+                                                   piece_list[i].rect)
+            else:
+                piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("queen_heavily_damaged.png"),
+                                                   (pygame.image.load("queen_heavily_damaged.png").get_size()[0]*4*scale_factor, pygame.image.load("queen_heavily_damaged.png").get_size()[1]*4*scale_factor)),
+                                                   piece_list[i].rect)
+
 
     for i in range(len(bullet_list)):
         bullet_list[i].visual = pygame.draw.rect(screen, bullet_list[i].color,
@@ -324,11 +410,7 @@ while run:
                                                       game_position_modifier(consumable_list[i].position_x, consumable_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, consumable_list[i].size, scale_factor)[1],
                                                       scale_factor * consumable_list[i].size, scale_factor * consumable_list[i].size))
 
-    user = pygame.draw.rect(screen, (100, 100, 255),
-                            (scale_factor * (user_pos[0] - (user_size / 2)) + screen_size[0] / 2,
-                             scale_factor * (user_pos[1] - (user_size / 2)) + screen_size[1] / 2,
-                             scale_factor * user_size, scale_factor * user_size),
-                            max(int(10 * scale_factor), min_border_thickness))
+    screen.blit(user_image, user)
 
     pygame.draw.line(screen, (50, 150, 50), (400, 400), game_position_modifier(mouse_current_position[0], mouse_current_position[1], camera_x_distance, camera_y_distance, screen_size, 0, scale_factor))
 
@@ -386,46 +468,54 @@ while run:
     collision_left = False
     collision_right = False
 
+
     for i in range(len(piece_list)):
         if not collision_bottom:
             collision_bottom = (pygame.Rect.colliderect(user, (
-                piece_list[i].visual[0],
-                piece_list[i].visual[1] + scale_factor * collision_allowance * user_movement_speed,
-                piece_list[i].visual[2], piece_list[i].visual[2])))
+                piece_list[i].rect[0],
+                piece_list[i].rect[1] + scale_factor * collision_allowance * user_movement_speed,
+                piece_list[i].rect[2], piece_list[i].rect[3])))
 
-    if collision_bottom:
-        user_stats[0] -= 10
-        print(user_stats)
+        if collision_bottom:
+            user_stats[6] -= 10
+            camera_pos[1] += 30
+            user_regen_timer = time.time()
+            print(user_stats)
 
         if not collision_top:
             collision_top = (pygame.Rect.colliderect(user, (
-                piece_list[i].visual[0],
-                piece_list[i].visual[1] - scale_factor * collision_allowance * user_movement_speed,
-                piece_list[i].visual[2], piece_list[i].visual[3])))
+                piece_list[i].rect[0],
+                piece_list[i].rect[1] - scale_factor * collision_allowance * user_movement_speed,
+                piece_list[i].rect[2], piece_list[i].rect[3])))
 
-        if collision_bottom:
-            user_stats[0] -= 10
-            camera_pos[1] += 10
+        if collision_top:
+            user_stats[6] -= 10
+            camera_pos[1] -= 30
+            user_regen_timer = time.time()
             print(user_stats)
 
         if not collision_left:
             collision_left = (pygame.Rect.colliderect(user, (
-                piece_list[i].visual[0] + scale_factor * collision_allowance * user_movement_speed,
-                piece_list[i].visual[1],
-                piece_list[i].visual[2], piece_list[i].visual[3])))
+                piece_list[i].rect[0] + scale_factor * collision_allowance * user_movement_speed,
+                piece_list[i].rect[1],
+                piece_list[i].rect[2], piece_list[i].rect[3])))
 
-        if collision_bottom:
-            user_stats[0] -= 10
+        if collision_left:
+            user_stats[6] -= 10
+            camera_pos[0] += 30
+            user_regen_timer = time.time()
             print(user_stats)
 
         if not collision_right:
             collision_right = (pygame.Rect.colliderect(user, (
-                piece_list[i].visual[0] - scale_factor * collision_allowance * user_movement_speed,
-                piece_list[i].visual[1],
-                piece_list[i].visual[2], piece_list[i].visual[3])))
+                piece_list[i].rect[0] - scale_factor * collision_allowance * user_movement_speed,
+                piece_list[i].rect[1],
+                piece_list[i].rect[2], piece_list[i].rect[3])))
 
-        if collision_bottom:
-            user_stats[0] -= 10
+        if collision_right:
+            user_stats[6] -= 10
+            camera_pos[0] -= 30
+            user_regen_timer = time.time()
             print(user_stats)
 
     if keys[pygame.K_w] and not collision_bottom:
