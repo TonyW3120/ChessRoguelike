@@ -1,43 +1,41 @@
-class Piece(object):
-    # def __init__(self, position_x, position_y, size, color, health, tile):
-    #     self.visual = 0
-    #     self.position_x = position_x
-    #     self.position_y = position_y
-    #     self.size = size
-    #     self.color = color
-    #     self.health = health
-    #     self.tile = tile
+import pygame
 
+class Piece(object):
     def __init__(self, position_x, position_y, variant, tile):
+        self.rect = 0
         self.visual = 0
         self.position_x = position_x
         self.position_y = position_y
         self.tile = tile
         if variant == 0:
-            self.size = 20
+            self.variant = 0
+            self.size = (pygame.image.load("pawn_undamaged.png").get_size()[0]*4, pygame.image.load("pawn_undamaged.png").get_size()[1]*4)
             self.color = (70, 70, 80)
-            self.health = 1
+            self.health = 3
 
         if variant == 1:
-            self.size = 35
+            self.variant = 1
+            self.size = (pygame.image.load("knight_undamaged.png").get_size()[0]*4, pygame.image.load("knight_undamaged.png").get_size()[1]*4)
             self.color = (60, 60, 90)
-            self.health = 3
-
-        if variant == 2:
-            self.size = 35
-            self.color = (60, 80, 70)
-            self.health = 3
-
-        if variant == 3:
-            self.size = 35
-            self.color = (80, 60, 70)
-            self.health = 5
-
-        if variant == 4:
-            self.size = 50
-            self.color = (70, 70, 80)
             self.health = 10
 
+        if variant == 2:
+            self.variant = 2
+            self.size = (pygame.image.load("bishop_undamaged.png").get_size()[0]*4, pygame.image.load("bishop_undamaged.png").get_size()[1]*4)
+            self.color = (60, 80, 70)
+            self.health = 10
+
+        if variant == 3:
+            self.variant = 3
+            self.size = (pygame.image.load("rook_undamaged.png").get_size()[0]*4, pygame.image.load("rook_undamaged.png").get_size()[1]*4)
+            self.color = (80, 60, 70)
+            self.health = 20
+
+        if variant == 4:
+            self.variant = 4
+            self.size = (pygame.image.load("queen_undamaged.png").get_size()[0]*4, pygame.image.load("queen_undamaged.png").get_size()[1]*4)
+            self.color = (70, 70, 80)
+            self.health = 50
 
 class Consumable(object):
     def __init__(self, position_x, position_y, size, variant, tile):
