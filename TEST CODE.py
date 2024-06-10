@@ -1,4 +1,4 @@
-import random
+ort random
 import pygame
 import math
 import time
@@ -330,58 +330,57 @@ while run:
         if piece_list[i].variant == 0:
             if piece_list[i].health == 3:
                 piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("pawn_undamaged.png"),
-                                                   (pygame.image.load("pawn_undamaged.png").get_size()[0]*4*scale_factor, pygame.image.load("pawn_undamaged.png").get_size()[1]*4*scale_factor)),
-                                                   piece_list[i].rect)
+                                                                          (piece_list[i].size[0]*scale_factor, piece_list[i].size[1]*scale_factor)), piece_list[i].rect)
             elif piece_list[i].health == 2:
                 piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("pawn_damaged.png"),
-                                                   (pygame.image.load("pawn_damaged.png").get_size()[0] * 4 * scale_factor, pygame.image.load("pawn_damaged.png").get_size()[1] * 4 * scale_factor)),
-                                                   piece_list[i].rect)
+                                                                          (piece_list[i].size[0]*scale_factor, piece_list[i].size[1]*scale_factor)), piece_list[i].rect)
             else:
                 piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("pawn_heavily_damaged.png"),
-                                                   (pygame.image.load("pawn_heavily_damaged.png").get_size()[0]*4*scale_factor, pygame.image.load("pawn_heavily_damaged.png").get_size()[1]*4*scale_factor)),
+                                                                          (piece_list[i].size[0] * scale_factor,
+                                                                           piece_list[i].size[1] * scale_factor)),
                                                    piece_list[i].rect)
 
         if piece_list[i].variant == 1:
             if piece_list[i].health > 7:
                 piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("knight_undamaged.png"),
-                                                   (pygame.image.load("knight_undamaged.png").get_size()[0]*4*scale_factor, pygame.image.load("knight_undamaged.png").get_size()[1]*4*scale_factor)),
+                                                                          (piece_list[i].size[0] * scale_factor,
+                                                                           piece_list[i].size[1] * scale_factor)),
                                                    piece_list[i].rect)
             elif piece_list[i].health > 4:
                 piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("knight_damaged.png"),
-                                                   (pygame.image.load("knight_damaged.png").get_size()[0] * 4 * scale_factor, pygame.image.load("knight_damaged.png").get_size()[1] * 4 * scale_factor)),
+                                                                          (piece_list[i].size[0] * scale_factor,
+                                                                           piece_list[i].size[1] * scale_factor)),
                                                    piece_list[i].rect)
             else:
                 piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("knight_heavily_damaged.png"),
-                                                   (pygame.image.load("knight_heavily_damaged.png").get_size()[0]*4*scale_factor, pygame.image.load("knight_heavily_damaged.png").get_size()[1]*4*scale_factor)),
-                                                   piece_list[i].rect)
+                                                                          (piece_list[i].size[0]*scale_factor, piece_list[i].size[1]*scale_factor)), piece_list[i].rect)
 
         if piece_list[i].variant == 2:
             if piece_list[i].health > 7:
                 piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("bishop_undamaged.png"),
-                                                   (pygame.image.load("bishop_undamaged.png").get_size()[0]*4*scale_factor, pygame.image.load("bishop_undamaged.png").get_size()[1]*4*scale_factor)),
+                                                                          (piece_list[i].size[0] * scale_factor,
+                                                                           piece_list[i].size[1] * scale_factor)),
                                                    piece_list[i].rect)
+
             elif piece_list[i].health > 4:
                 piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("bishop_damaged.png"),
-                                                   (pygame.image.load("bishop_damaged.png").get_size()[0] * 4 * scale_factor, pygame.image.load("bishop_damaged.png").get_size()[1] * 4 * scale_factor)),
-                                                   piece_list[i].rect)
+                                                                          (piece_list[i].size[0]*scale_factor, piece_list[i].size[1]*scale_factor)), piece_list[i].rect)
             else:
                 piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("bishop_heavily_damaged.png"),
-                                                   (pygame.image.load("bishop_heavily_damaged.png").get_size()[0]*4*scale_factor, pygame.image.load("bishop_heavily_damaged.png").get_size()[1]*4*scale_factor)),
+                                                                          (piece_list[i].size[0] * scale_factor,
+                                                                           piece_list[i].size[1] * scale_factor)),
                                                    piece_list[i].rect)
 
         if piece_list[i].variant == 3:
             if piece_list[i].health > 15:
                 piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("rook_undamaged.png"),
-                                                   (pygame.image.load("rook_undamaged.png").get_size()[0]*4*scale_factor, pygame.image.load("rook_undamaged.png").get_size()[1]*4*scale_factor)),
-                                                   piece_list[i].rect)
+                                                                          (piece_list[i].size[0]*scale_factor, piece_list[i].size[1]*scale_factor)), piece_list[i].rect)
             elif piece_list[i].health > 7:
                 piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("rook_damaged.png"),
-                                                   (pygame.image.load("rook_damaged.png").get_size()[0] * 4 * scale_factor, pygame.image.load("rook_damaged.png").get_size()[1] * 4 * scale_factor)),
-                                                   piece_list[i].rect)
+                                                                          (piece_list[i].size[0]*scale_factor, piece_list[i].size[1]*scale_factor)), piece_list[i].rect)
             else:
                 piece_list[i].visual = screen.blit(pygame.transform.scale(pygame.image.load("rook_heavily_damaged.png"),
-                                                   (pygame.image.load("rook_heavily_damaged.png").get_size()[0]*4*scale_factor, pygame.image.load("rook_heavily_damaged.png").get_size()[1]*4*scale_factor)),
-                                                   piece_list[i].rect)
+                                                                          (piece_list[i].size[0]*scale_factor, piece_list[i].size[1]*scale_factor)), piece_list[i].rect)
 
         if piece_list[i].variant == 4:
             if piece_list[i].health > 15:
@@ -405,10 +404,11 @@ while run:
                                                   scale_factor * bullet_list[i].size, scale_factor * bullet_list[i].size))
 
     for i in range(len(consumable_list)):
-        consumable_list[i].visual = pygame.draw.rect(screen, consumable_list[i].color,
-                                                     (game_position_modifier(consumable_list[i].position_x, consumable_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, consumable_list[i].size, scale_factor)[0],
-                                                      game_position_modifier(consumable_list[i].position_x, consumable_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, consumable_list[i].size, scale_factor)[1],
-                                                      scale_factor * consumable_list[i].size, scale_factor * consumable_list[i].size))
+        consumable_list[i].rect = pygame.Rect(game_position_modifier(consumable_list[i].position_x, consumable_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, consumable_list[i].size[0], scale_factor)[0],
+                                              game_position_modifier(consumable_list[i].position_x, consumable_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, consumable_list[i].size[1], scale_factor)[1],
+                                              scale_factor * consumable_list[i].size[0], scale_factor * consumable_list[i].size[1])
+
+        consumable_list[i].visual = screen.blit(pygame.transform.scale(consumable_list[i].image, (consumable_list[i].size[0]*scale_factor, consumable_list[i].size[1]*scale_factor)), consumable_list[i].rect)
 
     screen.blit(user_image, user)
 
@@ -431,8 +431,8 @@ while run:
                     continue
             if bullet_collision_occurred:
                 break
-            if round(bullet_list[i].position_x, 0) == round(bullet_list[i].target[0], 0) and round(bullet_list[i].position_y, 0) == round(bullet_list[i].target[1], 0):
-                print(bullet_list[i].position_x, bullet_list[i].position_y)
+            if bullet_list[i].position_x < (400 - (grid_size * grid_square_size / 2)) or bullet_list[i].position_x > (400 + (grid_size * grid_square_size / 2)) or \
+               bullet_list[i].position_y < (400 - (grid_size * grid_square_size / 2)) or bullet_list[i].position_y > (400 + (grid_size * grid_square_size / 2)):
                 bullet_list.pop(i)
                 break
             else:
