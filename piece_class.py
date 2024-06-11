@@ -8,28 +8,32 @@ class Piece(object):
         self.position_y = position_y
         self.tile = tile
         self.variant = variant
+        self.target = 0
+        self.temp_tile = tile
+        self.delta_x = 0
+        self.delta_y = 0
         if variant == 0:
-            self.size = (pygame.image.load("pawn_undamaged.png").get_size()[0]*4, pygame.image.load("pawn_undamaged.png").get_size()[1]*4)
+            self.size = (pygame.image.load("pawn_undamaged.png").get_size()[0]*3.5, pygame.image.load("pawn_undamaged.png").get_size()[1]*3.5)
             self.color = (70, 70, 80)
             self.health = 3
 
         if variant == 1:
-            self.size = (pygame.image.load("knight_undamaged.png").get_size()[0]*4, pygame.image.load("knight_undamaged.png").get_size()[1]*4)
+            self.size = (pygame.image.load("knight_undamaged.png").get_size()[0]*3.5, pygame.image.load("knight_undamaged.png").get_size()[1]*3.5)
             self.color = (60, 60, 90)
             self.health = 10
 
         if variant == 2:
-            self.size = (pygame.image.load("bishop_undamaged.png").get_size()[0]*4, pygame.image.load("bishop_undamaged.png").get_size()[1]*4)
+            self.size = (pygame.image.load("bishop_undamaged.png").get_size()[0]*3.5, pygame.image.load("bishop_undamaged.png").get_size()[1]*3.5)
             self.color = (60, 80, 70)
             self.health = 10
 
         if variant == 3:
-            self.size = (pygame.image.load("rook_undamaged.png").get_size()[0]*4, pygame.image.load("rook_undamaged.png").get_size()[1]*4)
+            self.size = (pygame.image.load("rook_undamaged.png").get_size()[0]*3.5, pygame.image.load("rook_undamaged.png").get_size()[1]*3.5)
             self.color = (80, 60, 70)
             self.health = 20
 
         if variant == 4:
-            self.size = (pygame.image.load("queen_undamaged.png").get_size()[0]*4, pygame.image.load("queen_undamaged.png").get_size()[1]*4)
+            self.size = (pygame.image.load("queen_undamaged.png").get_size()[0]*3.5, pygame.image.load("queen_undamaged.png").get_size()[1]*3.5)
             self.color = (70, 70, 80)
             self.health = 50
 
