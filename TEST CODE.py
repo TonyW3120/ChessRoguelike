@@ -44,8 +44,6 @@ grid_size = 8
 grid = []
 grid_visual = []
 grid_objects = []
-iframe_duration = 1
-iframe_active = False
 
 #1 - 100, number refers to percentage
 consumable_drop_rate = 100
@@ -58,12 +56,16 @@ min_border_thickness = 1
 mouse_current_position = [400, 400]
 min_zoom_out = 0.5
 max_zoom_out = 1.5
+enemy_movement_cooldown = 3
+enemy_movement_timer = 0
 
 # Objects: test = Ship(pos_x, pos_x, size, (r, g, b), health)
 
 piece_list = []
 bullet_list = []
 consumable_list = []
+movement_weight_list = []
+damage_source_tiles = []
 selected_tile = (0, 0)
 
 
@@ -84,6 +86,18 @@ def game_position_modifier(position_x, position_y, camera_x_distance, camera_y_d
                     scale_factor * ((position_y + camera_y_distance) - (object_size / 2)) + screen_size[1] / 2)
     return new_position
 
+def pawn_movement_search(list, position):
+    max_value = float('-inf')
+    max_index = None
+
+    for i in range(position[1] - 1, position[1] + 2):
+        for j in range(position[0] - 1, position[0] + 2):
+            if 0 <= i < len(list) and 0 <= j < len(list[0]):
+                if list[i][j] > max_value:
+                    max_value = list[i][j]
+                    max_index = (i - 1, j - 1)
+
+    return max_index
 
 # Grid creation
 for i in range(grid_size):
@@ -102,20 +116,23 @@ for i in range(grid_size):
                                   (screen_size[1] - (grid_square_size * grid_size) / 2) + i * grid_square_size,
                                   grid_square_size, 0))
 
-# INCOMPLETE, TRY TO ALIGN ENEMIES WITH GRID
 for i in range(grid_size):
     grid_objects.append([])
     for j in range(grid_size):
         grid_objects[i].append([])
+
+for i in range(grid_size + 2):
+    movement_weight_list.append([])
+    for j in range(grid_size + 2):
+        movement_weight_list[i].append(0.0)
 
 # Game start
 
 while run:
 
     clock.tick(fps)
-    # if frame == 75:
-    #     print(camera_pos)
-    #     print(mouse_current_position)
+    if frame == 75:
+        enemy_movement_timer += 1
 
     if frame == fps + 1:
         frame = 1
@@ -244,7 +261,7 @@ while run:
         user_image = pygame.image.load("king_damaged.png")
     if user_health/user_max_health <= 0.3:
         user_image = pygame.image.load("king_heavily_damaged.png")
-    user_image = pygame.transform.scale(user_image, (user_image.get_size()[0]*4*scale_factor, user_image.get_size()[1]*4*scale_factor))
+    user_image = pygame.transform.scale(user_image, (user_image.get_size()[0]*3.5*scale_factor, user_image.get_size()[1]*3.5*scale_factor))
     user_size = user_image.get_size()
 
     user = pygame.Rect(scale_factor * (user_pos[0] - (user_size[0] / 2)/scale_factor) + screen_size[0] / 2,
@@ -265,6 +282,8 @@ while run:
                 grid_visual[i][j] = (Tile((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (j+0.5) * grid_square_size,
                                           (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (i+0.5) * grid_square_size,
                                           grid_square_size, 2))
+
+                user_grid_position = (i, j)
 
                 grid_visual[i][j].visual = pygame.draw.rect(screen, grid_visual[i][j].color,
                                                             (game_position_modifier(grid_visual[i][j].position_x, grid_visual[i][j].position_y, camera_x_distance, camera_y_distance, screen_size, grid_visual[i][j].size, scale_factor)[0],
@@ -291,6 +310,11 @@ while run:
                 grid_visual[i][j] = (Tile((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (j+0.5) * grid_square_size,
                                           (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (i+0.5) * grid_square_size,
                                           grid_square_size, 0))
+
+    for i in range(len(damage_source_tiles)):
+        grid_visual[damage_source_tiles[i][0]][damage_source_tiles[i][1]] = (Tile((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (damage_source_tiles[i][1] + 0.5) * grid_square_size,
+                                                                            (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (damage_source_tiles[i][0] + 0.5) * grid_square_size,
+                                                                            grid_square_size, 4))
 
 #IDK WHY IT WORKS WHEN I DELETE THIS CODE
     # for i in range(grid_size):
@@ -396,7 +420,6 @@ while run:
                                                    (pygame.image.load("queen_heavily_damaged.png").get_size()[0]*4*scale_factor, pygame.image.load("queen_heavily_damaged.png").get_size()[1]*4*scale_factor)),
                                                    piece_list[i].rect)
 
-
     for i in range(len(bullet_list)):
         bullet_list[i].visual = pygame.draw.rect(screen, bullet_list[i].color,
                                                  (game_position_modifier(bullet_list[i].position_x, bullet_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, bullet_list[i].size, scale_factor)[0],
@@ -476,11 +499,6 @@ while run:
                 piece_list[i].rect[1] + scale_factor * collision_allowance * user_movement_speed,
                 piece_list[i].rect[2], piece_list[i].rect[3])))
 
-        if collision_bottom:
-            user_stats[6] -= 10
-            camera_pos[1] += 30
-            user_regen_timer = time.time()
-            print(user_stats)
 
         if not collision_top:
             collision_top = (pygame.Rect.colliderect(user, (
@@ -488,11 +506,6 @@ while run:
                 piece_list[i].rect[1] - scale_factor * collision_allowance * user_movement_speed,
                 piece_list[i].rect[2], piece_list[i].rect[3])))
 
-        if collision_top:
-            user_stats[6] -= 10
-            camera_pos[1] -= 30
-            user_regen_timer = time.time()
-            print(user_stats)
 
         if not collision_left:
             collision_left = (pygame.Rect.colliderect(user, (
@@ -500,11 +513,6 @@ while run:
                 piece_list[i].rect[1],
                 piece_list[i].rect[2], piece_list[i].rect[3])))
 
-        if collision_left:
-            user_stats[6] -= 10
-            camera_pos[0] += 30
-            user_regen_timer = time.time()
-            print(user_stats)
 
         if not collision_right:
             collision_right = (pygame.Rect.colliderect(user, (
@@ -512,11 +520,6 @@ while run:
                 piece_list[i].rect[1],
                 piece_list[i].rect[2], piece_list[i].rect[3])))
 
-        if collision_right:
-            user_stats[6] -= 10
-            camera_pos[0] -= 30
-            user_regen_timer = time.time()
-            print(user_stats)
 
     if keys[pygame.K_w] and not collision_bottom:
         camera_pos[1] += -user_movement_speed
@@ -529,6 +532,69 @@ while run:
 
     if keys[pygame.K_a] and not collision_left:
         camera_pos[0] += -user_movement_speed
+
+    for i in range(grid_size):
+        for j in range(grid_size):
+            movement_weight_list[i + 1][j + 1] = round(10 - math.sqrt(((user_grid_position[0] - i)**2) + ((user_grid_position[1] - j)**2)), 1)
+
+    # if enemy_movement_timer == enemy_movement_cooldown:
+    #     enemy_movement_timer = 0
+    #     for i in range(grid_size+2):
+    #         print(movement_weight_list[i])
+    #     print("")
+
+    if enemy_movement_timer == enemy_movement_cooldown:
+        enemy_movement_timer = 0
+        damage_source_tiles = []
+        for i in range(len(piece_list)):
+            if piece_list[i].variant == 0:
+                piece_list[i].temp_tile = piece_list[i].tile
+                piece_list[i].target = pawn_movement_search(movement_weight_list, (piece_list[i].tile[1] + 1, piece_list[i].tile[0] + 1))
+                piece_list[i].tile = pawn_movement_search(movement_weight_list, (piece_list[i].tile[1] + 1, piece_list[i].tile[0] + 1))
+
+                piece_list[i].position_x = piece_list[i].tile[1] * grid_square_size + 50 * scale_factor
+                piece_list[i].position_y = piece_list[i].tile[0] * grid_square_size + 50 * scale_factor
+
+                piece_list[i].rect = pygame.Rect((game_position_modifier(piece_list[i].position_x, piece_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, piece_list[i].size[0], scale_factor)[0],
+                                                  game_position_modifier(piece_list[i].position_x, piece_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, piece_list[i].size[1], scale_factor)[1],
+                                                  scale_factor * piece_list[i].size[0], scale_factor * piece_list[i].size[1]))
+
+                if pygame.Rect.colliderect(user, piece_list[i].rect):
+                    user_stats[6] -= 10
+                    user_regen_timer = time.time()
+                    print(user_stats)
+
+                    #FIX SCALE FACTOR
+                    piece_list[i].position_x = piece_list[i].temp_tile[1] * grid_square_size + 50 * scale_factor
+                    piece_list[i].position_y = piece_list[i].temp_tile[0] * grid_square_size + 50 * scale_factor
+
+                    piece_list[i].tile = piece_list[i].temp_tile
+
+                    damage_source_tiles.append(piece_list[i].tile)
+
+                    movement_weight_list[piece_list[i].tile[0] + 1][piece_list[i].tile[1] + 1] = 0.0
+
+                else:
+                    movement_weight_list[piece_list[i].target[0] + 1][piece_list[i].target[1] + 1] = 0.0
+
+
+
+    # for i in range(len(piece_list)):
+    #     piece_list[i].tile = (math.floor((piece_list[i].position_y - 50)/grid_square_size), math.floor((piece_list[i].position_x - 50)/grid_square_size))
+    #
+    #     if piece_list[i].tile != piece_list[i].target and piece_list[i].target != 0:
+    #         if piece_list[i].target[0] < piece_list[i].tile[1]:
+    #             piece_list[i].delta_x = -math.cos(angle(piece_list[i].tile, piece_list[i].target))
+    #             piece_list[i].delta_y = -math.sin(angle(piece_list[i].tile, piece_list[i].target))
+    #         else:
+    #             piece_list[i].delta_x = math.cos(angle(piece_list[i].tile, piece_list[i].target))
+    #             piece_list[i].delta_y = math.sin(angle(piece_list[i].tile, piece_list[i].target))
+    #
+    # for i in range(len(piece_list)):
+    #     if piece_list[i].tile != piece_list[i].target:
+    #         piece_list[i].position_x += piece_list[i].delta_x * 5
+    #         piece_list[i].position_y += piece_list[i].delta_y * 5
+
 
     frame += 1
     pygame.display.update()
