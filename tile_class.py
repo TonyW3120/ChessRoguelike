@@ -14,3 +14,5 @@ class Tile(object):
             self.color = (200, 50, 60)
         if variant == 3:
             self.color = (50, 50, 210)
+        if variant == 4:
+            self.color = (250, 50, 60)
