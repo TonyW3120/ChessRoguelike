@@ -161,7 +161,30 @@ while run:
     # EVENT
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1 and time.time() - user_last_fired >= user_attack_speed:
+                user_last_fired = time.time()
+                bullet_list.append(Bullet(
+                    visual_position_modifier(400, 400, camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
+                    visual_position_modifier(400, 400, camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
+                    5, (255, 255, 100), mouse_current_position))
+
+                if bullet_list[-1].target[0] < bullet_list[-1].position_x:
+                    bullet_list[-1].delta_x = -math.cos(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
+                    bullet_list[-1].delta_y = -math.sin(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
+                else:
+                    bullet_list[-1].delta_x = math.cos(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
+                    bullet_list[-1].delta_y = math.sin(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
+
             if event.button == 2 and grid_objects[selected_tile[0]][selected_tile[1]] == []:
+                grid_objects[selected_tile[0]][selected_tile[1]] = (Consumable((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
+                                                                               (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
+                                                                               20, 0, (selected_tile[0], selected_tile[1])))
+
+                consumable_list.append(Consumable((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
+                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
+                                                  20, 0, (selected_tile[0], selected_tile[1])))
+
+            if event.button == 3 and time.time() - user_last_fired >= user_attack_speed:
                 grid_objects[selected_tile[0]][selected_tile[1]] = (Consumable((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[1] + 0.5) * grid_square_size,
                                                                                (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (selected_tile[0] + 0.5) * grid_square_size,
                                                                                20, 0, (selected_tile[0], selected_tile[1])))
@@ -177,19 +200,6 @@ while run:
 
                 elif user_movement_speed == 3:
                     user_stats[3] = 1
-
-            if event.unicode == "f" and time.time() - user_last_fired >= user_attack_speed:
-                user_last_fired = time.time()
-                bullet_list.append(Bullet(visual_position_modifier(400, 400, camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
-                                          visual_position_modifier(400, 400, camera_x_distance, camera_y_distance, screen_size, scale_factor)[1],
-                                          5, (255, 255, 100), mouse_current_position))
-
-                if bullet_list[-1].target[0] < bullet_list[-1].position_x:
-                    bullet_list[-1].delta_x = -math.cos(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
-                    bullet_list[-1].delta_y = -math.sin(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
-                else:
-                    bullet_list[-1].delta_x = math.cos(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
-                    bullet_list[-1].delta_y = math.sin(angle((bullet_list[-1].position_x, bullet_list[-1].position_y), bullet_list[-1].target))
 
             # PAWN
             if event.unicode == "1" and grid_objects[selected_tile[0]][selected_tile[1]] == []:
@@ -534,6 +544,41 @@ while run:
     #         print(movement_weight_list[i])
     #     print("")
 
+    # if enemy_movement_timer == enemy_movement_cooldown:
+    #     enemy_movement_timer = 0
+    #     damage_source_tiles = []
+    #     for i in range(len(piece_list)):
+    #         if piece_list[i].variant == 0:
+    #             piece_list[i].temp_tile = piece_list[i].tile
+    #             piece_list[i].target = pawn_movement_search(movement_weight_list, (piece_list[i].tile[1] + 1, piece_list[i].tile[0] + 1))
+    #             piece_list[i].tile = pawn_movement_search(movement_weight_list, (piece_list[i].tile[1] + 1, piece_list[i].tile[0] + 1))
+    #
+    #             piece_list[i].position_x = (screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (piece_list[i].tile[1] + 0.5) * grid_square_size
+    #             piece_list[i].position_y = (screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (piece_list[i].tile[0] + 0.5) * grid_square_size
+    #
+    #             piece_list[i].rect = pygame.Rect((game_position_modifier(piece_list[i].position_x, piece_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, piece_list[i].size[0], scale_factor)[0],
+    #                                               game_position_modifier(piece_list[i].position_x, piece_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, piece_list[i].size[1], scale_factor)[1],
+    #                                               scale_factor * piece_list[i].size[0], scale_factor * piece_list[i].size[1]))
+    #
+    #             if pygame.Rect.colliderect(user, piece_list[i].rect):
+    #                 user_stats[6] -= 10
+    #                 user_regen_timer = time.time()
+    #                 print(user_stats)
+    #
+    #                 #FIX SCALE FACTOR
+    #                 piece_list[i].position_x = (screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (piece_list[i].tile[1] + 0.5) * grid_square_size
+    #                 piece_list[i].position_y = (screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (piece_list[i].tile[0] + 0.5) * grid_square_size
+    #
+    #                 piece_list[i].tile = piece_list[i].temp_tile
+    #
+    #                 damage_source_tiles.append(piece_list[i].tile)
+    #
+    #                 movement_weight_list[piece_list[i].tile[0] + 1][piece_list[i].tile[1] + 1] = 0.0
+    #
+    #             else:
+    #                 movement_weight_list[piece_list[i].target[0] + 1][piece_list[i].target[1] + 1] = 0.0
+
+#FIX PLEASE
     if enemy_movement_timer == enemy_movement_cooldown:
         enemy_movement_timer = 0
         damage_source_tiles = []
@@ -541,49 +586,36 @@ while run:
             if piece_list[i].variant == 0:
                 piece_list[i].temp_tile = piece_list[i].tile
                 piece_list[i].target = pawn_movement_search(movement_weight_list, (piece_list[i].tile[1] + 1, piece_list[i].tile[0] + 1))
-                piece_list[i].tile = pawn_movement_search(movement_weight_list, (piece_list[i].tile[1] + 1, piece_list[i].tile[0] + 1))
 
-                piece_list[i].position_x = piece_list[i].tile[1] * grid_square_size + 50 * scale_factor
-                piece_list[i].position_y = piece_list[i].tile[0] * grid_square_size + 50 * scale_factor
+                movement_weight_list[piece_list[i].target[0] + 1][piece_list[i].target[1] + 1] = 0.0
 
-                piece_list[i].rect = pygame.Rect((game_position_modifier(piece_list[i].position_x, piece_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, piece_list[i].size[0], scale_factor)[0],
-                                                  game_position_modifier(piece_list[i].position_x, piece_list[i].position_y, camera_x_distance, camera_y_distance, screen_size, piece_list[i].size[1], scale_factor)[1],
-                                                  scale_factor * piece_list[i].size[0], scale_factor * piece_list[i].size[1]))
+                piece_list[i].tile_pos = ((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (piece_list[i].tile[1] + 0.5) * grid_square_size,
+                                      (screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (piece_list[i].tile[0] + 0.5) * grid_square_size)
 
-                if pygame.Rect.colliderect(user, piece_list[i].rect):
-                    user_stats[6] -= 10
-                    user_regen_timer = time.time()
-                    print(user_stats)
+                print(piece_list[i].tile_pos)
 
-                    #FIX SCALE FACTOR
-                    piece_list[i].position_x = piece_list[i].temp_tile[1] * grid_square_size + 50 * scale_factor
-                    piece_list[i].position_y = piece_list[i].temp_tile[0] * grid_square_size + 50 * scale_factor
+                piece_list[i].target_pos = ((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (piece_list[i].target[1] + 0.5) * grid_square_size,
+                                        (screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (piece_list[i].target[0] + 0.5) * grid_square_size)
 
-                    piece_list[i].tile = piece_list[i].temp_tile
+                print(piece_list[i].target_pos)
 
-                    damage_source_tiles.append(piece_list[i].tile)
 
-                    movement_weight_list[piece_list[i].tile[0] + 1][piece_list[i].tile[1] + 1] = 0.0
+    for i in range(len(piece_list)):
+        if piece_list[i].tile_pos != piece_list[i].target_pos and piece_list[i].target_pos != 0:
+            if piece_list[i].target_pos[0] > piece_list[i].tile_pos[1]:
+                piece_list[i].delta_x = -math.cos(angle(piece_list[i].tile_pos, piece_list[i].target_pos))
+                piece_list[i].delta_y = -math.sin(angle(piece_list[i].tile_pos, piece_list[i].target_pos))
+            else:
+                piece_list[i].delta_x = math.cos(angle(piece_list[i].tile_pos, piece_list[i].target_pos))
+                piece_list[i].delta_y = math.sin(angle(piece_list[i].tile_pos, piece_list[i].target_pos))
 
-                else:
-                    movement_weight_list[piece_list[i].target[0] + 1][piece_list[i].target[1] + 1] = 0.0
+    for i in range(len(piece_list)):
+        if piece_list[i].tile != piece_list[i].target:
+            piece_list[i].position_x += piece_list[i].delta_x * 1
+            piece_list[i].position_y += piece_list[i].delta_y * 1
 
-    # for i in range(len(piece_list)):
-    #     piece_list[i].tile = (math.floor((piece_list[i].position_y - 50)/grid_square_size), math.floor((piece_list[i].position_x - 50)/grid_square_size))
-    #
-    #     if piece_list[i].tile != piece_list[i].target and piece_list[i].target != 0:
-    #         if piece_list[i].target[0] < piece_list[i].tile[1]:
-    #             piece_list[i].delta_x = -math.cos(angle(piece_list[i].tile, piece_list[i].target))
-    #             piece_list[i].delta_y = -math.sin(angle(piece_list[i].tile, piece_list[i].target))
-    #         else:
-    #             piece_list[i].delta_x = math.cos(angle(piece_list[i].tile, piece_list[i].target))
-    #             piece_list[i].delta_y = math.sin(angle(piece_list[i].tile, piece_list[i].target))
-    #
-    # for i in range(len(piece_list)):
-    #     if piece_list[i].tile != piece_list[i].target:
-    #         piece_list[i].position_x += piece_list[i].delta_x * 5
-    #         piece_list[i].position_y += piece_list[i].delta_y * 5
-
+    frame += 1
+    pygame.display.update()
 
     frame += 1
     pygame.display.update()
