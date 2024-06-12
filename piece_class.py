@@ -7,9 +7,10 @@ class Piece(object):
         self.position_x = position_x
         self.position_y = position_y
         self.tile = tile
+        self.tile_pos = (position_y, position_x)
         self.variant = variant
-        self.target = 0
-        self.temp_tile = tile
+        self.target = tile
+        self.target_pos = (position_y, position_x)
         self.delta_x = 0
         self.delta_y = 0
         if variant == 0:
