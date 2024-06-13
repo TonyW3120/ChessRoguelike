@@ -32,6 +32,7 @@ user_movement_speed = user_stats[3]
 user_critical_chance = user_stats[4]
 user_dodge_chance = user_stats[5]
 user_health = user_stats[6]
+player_got_hit = False
 
 user_regen_timer = time.time()
 user_regen_time = 10
@@ -40,10 +41,17 @@ home_point = (0, 0)
 camera_pos = [400, 400]
 
 grid_square_size = 100
-grid_size = 7
+grid_size = 13
 grid = []
 grid_visual = []
 grid_objects = []
+
+fire_sfx = pygame.mixer.Sound("fire_sfx.mp3")
+hit_sfx = pygame.mixer.Sound("hit_sfx.wav")
+enemy_hit_sfx = pygame.mixer.Sound("enemy_hit_sfx.wav")
+enemy_destroyed_sfx = pygame.mixer.Sound("enemy_destroyed_sfx.wav")
+item_pickup_sfx = pygame.mixer.Sound("item_pickup_sfx.mp3")
+enemy_move_sfx = pygame.mixer.Sound("enemy_move_sfx.mp3")
 
 #1 - 100, number refers to percentage
 consumable_drop_rate = 100
@@ -71,8 +79,23 @@ bullet_list = []
 consumable_list = []
 movement_weight_list = []
 damage_source_tiles = []
-selected_tile = (0, 0)
 
+one_minute_rng = [0, 0, 0, 0, 0, 0, 0, 1, 2]
+two_minute_rng = [0, 0, 0, 1, 2]
+three_minute_rng = [0, 0, 0, 0, 1, 1, 2, 2, 3]
+four_minute_rng = [0, 0, 1, 2, 3]
+five_minute_rng = [1, 1, 1, 2, 2, 2, 3, 3, 3, 4]
+
+spawn_timer = 0
+spawn_time = 10
+game_time_seconds = 0
+
+spawner_1 = (0, 0)
+spawner_2 = (0, grid_size - 1)
+spawner_3 = (grid_size - 1, 0)
+spawner_4 = (grid_size - 1, grid_size - 1)
+
+selected_tile = (0, 0)
 
 # Functions
 def angle(position1, position2):
@@ -226,7 +249,6 @@ for i in range(grid_size + 2):
         movement_weight_list[i].append(0.0)
 
 # Game start
-
 while run:
     while user_stats[6] > 0:
         clock.tick(fps)
@@ -234,6 +256,8 @@ while run:
 
         if frame % 75 == 0:
             enemy_movement_timer += 1
+            spawn_timer += 1
+            game_time_seconds += 1
 
         if frame == fps + 1:
             frame = 1
@@ -259,10 +283,204 @@ while run:
         if time.time() - user_regen_timer > user_regen_time and user_max_health > user_health:
             user_stats[6] += 0.05
 
+        if spawn_timer == spawn_time:
+            spawn_timer = 0
+            if game_time_seconds > 0 and game_time_seconds < 60:
+                grid_objects[spawner_1[0]][spawner_1[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_1[1] + 0.5) * grid_square_size,
+                                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_1[0] + 0.5) * grid_square_size,
+                                                                  random.choice(one_minute_rng), (spawner_1[0], spawner_1[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_1[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_1[0] + 0.5) * grid_square_size,
+                                        grid_objects[spawner_1[0]][spawner_1[1]].variant, (spawner_1[0], spawner_1[1])))
+
+
+                grid_objects[spawner_2[0]][spawner_2[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_2[1] + 0.5) * grid_square_size,
+                                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_2[0] + 0.5) * grid_square_size,
+                                                                  random.choice(one_minute_rng), (spawner_2[0], spawner_2[1])))
+
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_2[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_2[0] + 0.5) * grid_square_size,
+                                        grid_objects[spawner_2[0]][spawner_2[1]].variant, (spawner_2[0], spawner_2[1])))
+
+
+                grid_objects[spawner_3[0]][spawner_3[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_3[1] + 0.5) * grid_square_size,
+                                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_3[0] + 0.5) * grid_square_size,
+                                                                  random.choice(one_minute_rng), (spawner_3[0], spawner_3[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_3[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_3[0] + 0.5) * grid_square_size,
+                                        grid_objects[spawner_3[0]][spawner_3[1]].variant, (spawner_3[0], spawner_3[1])))
+
+
+                grid_objects[spawner_4[0]][spawner_4[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_4[1] + 0.5) * grid_square_size,
+                                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_4[0] + 0.5) * grid_square_size,
+                                                                  random.choice(one_minute_rng), (spawner_4[0], spawner_4[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_4[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_4[0] + 0.5) * grid_square_size,
+                                        grid_objects[spawner_4[0]][spawner_4[1]].variant, (spawner_4[0], spawner_4[1])))
+
+            if game_time_seconds > 60 and game_time_seconds < 120:
+                grid_objects[spawner_1[0]][spawner_1[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_1[1] + 0.5) * grid_square_size,
+                                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_1[0] + 0.5) * grid_square_size,
+                                                                  random.choice(two_minute_rng), (spawner_1[0], spawner_1[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_1[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_1[0] + 0.5) * grid_square_size,
+                                        grid_objects[spawner_1[0]][spawner_1[1]].variant, (spawner_1[0], spawner_1[1])))
+
+
+                grid_objects[spawner_2[0]][spawner_2[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_2[1] + 0.5) * grid_square_size,
+                                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_2[0] + 0.5) * grid_square_size,
+                                                                  random.choice(two_minute_rng), (spawner_2[0], spawner_2[1])))
+
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_2[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_2[0] + 0.5) * grid_square_size,
+                                        grid_objects[spawner_2[0]][spawner_2[1]].variant, (spawner_2[0], spawner_2[1])))
+
+
+                grid_objects[spawner_3[0]][spawner_3[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_3[1] + 0.5) * grid_square_size,
+                                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_3[0] + 0.5) * grid_square_size,
+                                                                  random.choice(two_minute_rng), (spawner_3[0], spawner_3[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_3[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_3[0] + 0.5) * grid_square_size,
+                                        grid_objects[spawner_3[0]][spawner_3[1]].variant, (spawner_3[0], spawner_3[1])))
+
+
+                grid_objects[spawner_4[0]][spawner_4[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_4[1] + 0.5) * grid_square_size,
+                                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_4[0] + 0.5) * grid_square_size,
+                                                                  random.choice(two_minute_rng), (spawner_4[0], spawner_4[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_4[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_4[0] + 0.5) * grid_square_size,
+                                        grid_objects[spawner_4[0]][spawner_4[1]].variant, (spawner_4[0], spawner_4[1])))
+
+            if game_time_seconds > 120 and game_time_seconds < 180:
+                grid_objects[spawner_1[0]][spawner_1[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_1[1] + 0.5) * grid_square_size,
+                                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_1[0] + 0.5) * grid_square_size,
+                                                                  random.choice(three_minute_rng), (spawner_1[0], spawner_1[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_1[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_1[0] + 0.5) * grid_square_size,
+                                        grid_objects[spawner_1[0]][spawner_1[1]].variant, (spawner_1[0], spawner_1[1])))
+
+
+                grid_objects[spawner_2[0]][spawner_2[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_2[1] + 0.5) * grid_square_size,
+                                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_2[0] + 0.5) * grid_square_size,
+                                                                  random.choice(three_minute_rng), (spawner_2[0], spawner_2[1])))
+
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_2[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_2[0] + 0.5) * grid_square_size,
+                                        grid_objects[spawner_2[0]][spawner_2[1]].variant, (spawner_2[0], spawner_2[1])))
+
+
+                grid_objects[spawner_3[0]][spawner_3[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_3[1] + 0.5) * grid_square_size,
+                                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_3[0] + 0.5) * grid_square_size,
+                                                                  random.choice(three_minute_rng), (spawner_3[0], spawner_3[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_3[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_3[0] + 0.5) * grid_square_size,
+                                        grid_objects[spawner_3[0]][spawner_3[1]].variant, (spawner_3[0], spawner_3[1])))
+
+
+                grid_objects[spawner_4[0]][spawner_4[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_4[1] + 0.5) * grid_square_size,
+                                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_4[0] + 0.5) * grid_square_size,
+                                                                  random.choice(three_minute_rng), (spawner_4[0], spawner_4[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_4[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_4[0] + 0.5) * grid_square_size,
+                                        grid_objects[spawner_4[0]][spawner_4[1]].variant, (spawner_4[0], spawner_4[1])))
+
+
+            if game_time_seconds > 180 and game_time_seconds < 240:
+                grid_objects[spawner_1[0]][spawner_1[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_1[1] + 0.5) * grid_square_size,
+                                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_1[0] + 0.5) * grid_square_size,
+                                                                  random.choice(four_minute_rng), (spawner_1[0], spawner_1[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_1[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_1[0] + 0.5) * grid_square_size,
+                                        grid_objects[spawner_1[0]][spawner_1[1]].variant, (spawner_1[0], spawner_1[1])))
+
+
+                grid_objects[spawner_2[0]][spawner_2[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_2[1] + 0.5) * grid_square_size,
+                                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_2[0] + 0.5) * grid_square_size,
+                                                                  random.choice(four_minute_rng), (spawner_2[0], spawner_2[1])))
+
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_2[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_2[0] + 0.5) * grid_square_size,
+                                        grid_objects[spawner_2[0]][spawner_2[1]].variant, (spawner_2[0], spawner_2[1])))
+
+
+                grid_objects[spawner_3[0]][spawner_3[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_3[1] + 0.5) * grid_square_size,
+                                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_3[0] + 0.5) * grid_square_size,
+                                                                  random.choice(four_minute_rng), (spawner_3[0], spawner_3[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_3[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_3[0] + 0.5) * grid_square_size,
+                                        grid_objects[spawner_3[0]][spawner_3[1]].variant, (spawner_3[0], spawner_3[1])))
+
+
+                grid_objects[spawner_4[0]][spawner_4[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_4[1] + 0.5) * grid_square_size,
+                                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_4[0] + 0.5) * grid_square_size,
+                                                                  random.choice(four_minute_rng), (spawner_4[0], spawner_4[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_4[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_4[0] + 0.5) * grid_square_size,
+                                        grid_objects[spawner_4[0]][spawner_4[1]].variant, (spawner_4[0], spawner_4[1])))
+
+            if game_time_seconds > 240:
+                grid_objects[spawner_1[0]][spawner_1[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_1[1] + 0.5) * grid_square_size,
+                                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_1[0] + 0.5) * grid_square_size,
+                                                                  random.choice(five_minute_rng), (spawner_1[0], spawner_1[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_1[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_1[0] + 0.5) * grid_square_size,
+                                        grid_objects[spawner_1[0]][spawner_1[1]].variant, (spawner_1[0], spawner_1[1])))
+
+
+                grid_objects[spawner_2[0]][spawner_2[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_2[1] + 0.5) * grid_square_size,
+                                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_2[0] + 0.5) * grid_square_size,
+                                                                  random.choice(five_minute_rng), (spawner_2[0], spawner_2[1])))
+
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_2[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_2[0] + 0.5) * grid_square_size,
+                                        grid_objects[spawner_2[0]][spawner_2[1]].variant, (spawner_2[0], spawner_2[1])))
+
+
+                grid_objects[spawner_3[0]][spawner_3[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_3[1] + 0.5) * grid_square_size,
+                                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_3[0] + 0.5) * grid_square_size,
+                                                                  random.choice(five_minute_rng), (spawner_3[0], spawner_3[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_3[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_3[0] + 0.5) * grid_square_size,
+                                        grid_objects[spawner_3[0]][spawner_3[1]].variant, (spawner_3[0], spawner_3[1])))
+
+
+                grid_objects[spawner_4[0]][spawner_4[1]] = (Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_4[1] + 0.5) * grid_square_size,
+                                                                  (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_4[0] + 0.5) * grid_square_size,
+                                                                  random.choice(five_minute_rng), (spawner_4[0], spawner_4[1])))
+
+                piece_list.append(Piece((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (spawner_4[1] + 0.5) * grid_square_size,
+                                        (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (spawner_4[0] + 0.5) * grid_square_size,
+                                        grid_objects[spawner_4[0]][spawner_4[1]].variant, (spawner_4[0], spawner_4[1])))
+
+        if time.time() - user_last_fired >= user_attack_speed:
+            target_image = pygame.transform.scale(pygame.image.load("target_ready.png"),(pygame.image.load("target_ready.png").get_size()[0]*2, pygame.image.load("target_ready.png").get_size()[1]*2))
+        else:
+            target_image = pygame.transform.scale(pygame.image.load("target_unready.png"),(pygame.image.load("target_ready.png").get_size()[0]*2, pygame.image.load("target_ready.png").get_size()[1]*2))
+
         # EVENT
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1 and time.time() - user_last_fired >= user_attack_speed:
+                    fire_sfx.play()
                     user_last_fired = time.time()
                     bullet_list.append(Bullet(
                         visual_position_modifier(400, 400, camera_x_distance, camera_y_distance, screen_size, scale_factor)[0],
@@ -428,6 +646,7 @@ while run:
 
                 if piece_list[i].health <= 0:
                     if random.randint(0, 100) <= consumable_drop_rate and out_of_bounds_death == False:
+                        enemy_destroyed_sfx.play()
                         grid_objects[piece_list[i].tile[0]][piece_list[i].tile[1]] = Consumable((screen_size[0] / 2 - (grid_square_size * grid_size) / 2) + (piece_list[i].tile[1] + 0.5) * grid_square_size,
                                                                                                 (screen_size[1] / 2 - (grid_square_size * grid_size) / 2) + (piece_list[i].tile[0] + 0.5) * grid_square_size,
                                                                                                 20, random.randint(0, 5), (piece_list[i].tile[0], piece_list[i].tile[1]))
@@ -531,7 +750,8 @@ while run:
 
         screen.blit(user_image, user)
 
-        pygame.draw.line(screen, (50, 150, 50), (400, 400), game_position_modifier(mouse_current_position[0], mouse_current_position[1], camera_x_distance, camera_y_distance, screen_size, 0, scale_factor))
+        screen.blit(target_image, (game_position_modifier(mouse_current_position[0], mouse_current_position[1], camera_x_distance, camera_y_distance, screen_size, 0, scale_factor)[0] - 10,
+                                        game_position_modifier(mouse_current_position[0], mouse_current_position[1], camera_x_distance, camera_y_distance, screen_size, 0, scale_factor)[1] - 5))
 
         # MOVEMENT AND COLLISION
         bullet_collision_occurred = False
@@ -541,7 +761,8 @@ while run:
                 bullet_list[i].position_y += bullet_list[i].delta_y
                 for j in range(len(piece_list)):
                     if pygame.Rect.colliderect(bullet_list[i].visual, piece_list[j].visual):
-                        piece_list[j].health -= 1
+                        enemy_hit_sfx.play()
+                        piece_list[j].health -= user_damage
                         bullet_list.pop(i)
                         i -= 1
                         bullet_collision_occurred = True
@@ -559,6 +780,7 @@ while run:
 
         for i in range(len(consumable_list)):
             if pygame.Rect.colliderect(user, consumable_list[i].visual):
+                item_pickup_sfx.play()
                 if consumable_list[i].variant != 2:
                     user_stats[consumable_list[i].improvement_attribute] += consumable_list[i].improvement_quantity
                 else:
@@ -673,8 +895,9 @@ while run:
         #             else:
         #                 movement_weight_list[piece_list[i].target[0] + 1][piece_list[i].target[1] + 1] = 0.0
 
-    #FIX PLEASE
         if enemy_movement_timer == enemy_movement_cooldown:
+            if len(piece_list) != 0:
+                enemy_move_sfx.play()
             enemy_movement_timer = 0
             damage_source_tiles = []
             for i in range(len(piece_list)):
@@ -747,7 +970,10 @@ while run:
 
                 if pygame.Rect.colliderect(user, piece_list[i]):
                     # print("test")
-                    user_kb_timer = 0
+                    if player_got_hit is False:
+                        player_got_hit = True
+                        user_kb_timer = 0
+                        hit_sfx.play()
                     kb_delta_x = piece_list[i].delta_x * 7
                     kb_delta_y = piece_list[i].delta_y * 7
                     camera_pos[0] += kb_delta_x
@@ -764,6 +990,8 @@ while run:
             user_stats[6] -= 1
             user_regen_timer = time.time()
             print(user_stats)
+        else:
+            player_got_hit = False
 
         frame += 1
         pygame.display.update()
